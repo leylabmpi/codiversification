@@ -1,0 +1,95 @@
+---
+title: "Convert GTDB-Tk MAG classifications to NCBI"
+author: "`r Sys.info()['user']`"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    toc_depth: 4
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dpi = 200)
+knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(rows.print = 5)
+knitr::opts_chunk$set(max.print = 100)
+
+options(bitmapType='cairo')
+```
+
+
+# Introduction
+
+Here I will convert the GTDB-Tk MAG classifications to NCBI, in preparation for analysis of the inStrain results.
+
+Side note: All hashed items can be deleted before publishing on Git.
+
+# Setup
+
+**Paths & Params**
+
+```{r}
+gtdbtk = '/ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttrans/batch2_clusters1-3/round3/llg_output/gtdbtk/gtdbtk_summary_wTaxid.tsv'
+```
+
+**Libraries**
+
+```{r lib load, message=FALSE}
+library(readr)
+library(stringr)
+library(LeyLabRMisc)
+```
+
+Loading data
+
+```{r}
+gtdbtk <- read_tsv(gtdbtk)
+gtdbtk <- gtdbtk %>%
+                              select(user_genome, classification, taxid_rank) %>%
+                              mutate(user_genome = str_replace_all(user_genome, "[.]", "_"))
+                    
+colnames(gtdbtk) <- paste("gtdbtk",colnames(gtdbtk),sep="_")
+
+# Writing new GTDB-tk classification properly formatted for Nick's function https://github.com/nick-youngblut/gtdb_to_taxdump/blob/master/ncbi-gtdb_map.py
+add_gtdbtk_classifications <- . %>% mutate(gtdbtk_mostgranular = case_when(
+                                               str_detect(gtdbtk_taxid_rank, "species") ~ paste("s__", str_remove(gtdbtk_classification,".*s__"), sep = ""),
+                                               str_detect(gtdbtk_taxid_rank, "genus") ~ str_remove(paste("g__", str_remove(gtdbtk_classification,".*g__"), sep = ""),";s__"),
+                                               str_detect(gtdbtk_taxid_rank, "family") ~ str_remove(paste("f__", str_remove(gtdbtk_classification,".*f__"), sep = ""),";g__;s__"),
+                                               str_detect(gtdbtk_taxid_rank, "order") ~ str_remove(paste("o__", str_remove(gtdbtk_classification,".*o__"), sep = ""),";f__;g__;s__"),
+                                               str_detect(gtdbtk_taxid_rank, "class") ~ str_remove(paste("c__", str_remove(gtdbtk_classification,".*c__"), sep = ""),";o__;f__;g__;s__"),
+                                               str_detect(gtdbtk_taxid_rank, "phylum") ~ str_remove(paste("p__", str_remove(gtdbtk_classification,".*p__"), sep = ""),";c__;o__;f__;g__;s__"),
+                                               str_detect(gtdbtk_taxid_rank, "kingdom") ~ str_remove(paste("k__", str_remove(gtdbtk_classification,".*k__"), sep = ""),";p__;c__;o__;f__;g__;s__"),
+                                               TRUE ~ "gtdb_unknown"),
+                                          gtdbtk_domain = str_extract(gtdbtk_classification, "(?<=d__).+?(?=;)"),
+                                          gtdbtk_phylum = str_extract(gtdbtk_classification, "(?<=p__).+?(?=;)"),
+                                          gtdbtk_class = str_extract(gtdbtk_classification, "(?<=c__).+?(?=;)"),
+                                          gtdbtk_order = str_extract(gtdbtk_classification, "(?<=o__).+?(?=;)"),
+                                          gtdbtk_family = str_extract(gtdbtk_classification, "(?<=f__).+?(?=;)"),
+                                          gtdbtk_genus = str_extract(gtdbtk_classification, "(?<=g__).+?(?=;)"),
+                                          gtdbtk_species = str_remove(gtdbtk_classification,".*s__"))
+
+gtdbtk <- gtdbtk %>% add_gtdbtk_classifications
+```
+# Writing new GTDB-tk classification properly formatted for Nick's function https://github.com/nick-youngblut/gtdb_to_taxdump/blob/master/ncbi-gtdb_map.py
+```{r}
+#write_tsv(gtdbtk, file="/ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttrans/batch2_clusters1-3/round3/llg_output/gtdbtk/gtdbtk_to_ncbi/gtdbtk_output_reformatted.tsv")
+```
+
+# Ran the following code to produce the GTDB-Tk-to-NCBI SRG classifications
+cd /ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttrans/batch2_clusters1-3/round3/llg_output/gtdbtk/gtdbtk_to_ncbi; git clone https://github.com/nick-youngblut/gtdb_to_taxdump.git; cd gtdb_to_taxdump; /conda activate /ebio/abt3_projects/software/miniconda3_gt4.4/envs/r-verttrans; python ncbi-gtdb_map.py -q gtdb_taxonomy /ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttrans/batch2_clusters1-3/round3/llg_output/gtdbtk/gtdbtk_to_ncbi/gtdbtk_output_reformatted.tsv https://data.ace.uq.edu.au/public/gtdb/data/releases/release95/95.0/ar122_metadata_r95.tar.gz https://data.ace.uq.edu.au/public/gtdb/data/releases/release95/95.0/bac120_metadata_r95.tar.gz --outdir /ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttrans/batch2_clusters1-3/round3/llg_output/gtdbtk/gtdbtk_to_ncbi/gtdb_to_taxdump/output --column 4
+
+# Summary
+The SRG NCBI taxonomies are written to a file, ready for inStrain analysis.
+
+
+***
+
+# SessionInfo
+
+```{r sessionInfo}
+sessionInfo()
+```
