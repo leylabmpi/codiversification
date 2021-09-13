@@ -169,7 +169,7 @@ Writing enhanced inStrain output file for Hagay to make final figure (2/2)
 ```{r}
 #write_tsv(x=comp50, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/instrain_output_for_figure/instrain_comp50output_wmetadata.tsv")
 
-test change to file, testing ... testing test123 testing123
+test change to file, testing ... testing test123 testi
 ```
 
 
