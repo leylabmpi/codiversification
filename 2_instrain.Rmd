@@ -24,7 +24,7 @@ options(bitmapType='cairo')
 
 # Introduction
 
-Here I will prepare the inStrain output for the final paper figure.
+Here I will prepare the inStrain output for the final paper figure.TEST!
 
 Side note: All hashed items can be deleted before publishing on Git.
 The original version of this (which I used for lab meeting is in the parent directory, called "V2")
