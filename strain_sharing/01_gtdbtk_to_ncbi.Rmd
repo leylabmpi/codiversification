@@ -41,6 +41,7 @@ gtdbtk = '/ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttra
 ```{r lib load, message=FALSE}
 library(readr)
 library(stringr)
+library(tidyr)
 library(LeyLabRMisc)
 ```
 

@@ -24,25 +24,15 @@ options(bitmapType='cairo')
 
 # Introduction
 
-Here I will prepare the inStrain output for the final paper figure.TEST!
-
-Side note: All hashed items can be deleted before publishing on Git.
-The original version of this (which I used for lab meeting is in the parent directory, called "V2")
+Here I will perform strain-sharing analysis using inStrain's output
 
 # Setup
 
-**Paths & Params**
+**Paths & Data Loading**
 
 ```{r}
-output_dir = '/ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llmgps/cophyverttrans/batch2_clusters1-3/instrain/n784/llmgps_output'
-genomeWide_compare = file.path(output_dir, "/inStrain/output/inStrain_genomeWide_compare.tsv")
-metadata = '/ebio/abt3_projects/HUBIF_metagenomics/data/metadata/final_metadata/combined_LFCurated_01.07.2020.txt'
-gtdbtk = '/ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttrans/batch2_clusters1-3/round3/llg_output/gtdbtk/gtdbtk_to_ncbi/gtdbtk_output_reformatted.tsv'
-
-gtdbtk_to_NCBI = '/ebio/abt3_projects/HUBIF_metagenomics/data/pipelines/llg/cophyverttrans/batch2_clusters1-3/round3/llg_output/gtdbtk/gtdbtk_to_ncbi/gtdb_to_taxdump/output/taxonomy_map_summary.tsv'
-
-#IDs_for_paper = '/ebio/abt3_projects/HUBIF_metagenomics/data/metadata/final_metadata/IDs_mom_infant_n386_2021LFcorrected2.txt'
-IDs_for_paper = '/ebio/abt3_projects/HUBIF_metagenomics/data/metadata/cophy_vertrans_paper_ids/IDs_mom_infant_n386_2021LFcorrected2.txt'
+comp50 = '/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv'
+comp <- read_tsv(comp50)
 ```
 
 **Libraries**
@@ -59,121 +49,13 @@ library(LeyLabRMisc)
 #library(vegan)
 ```
 
-Loading data
-
-```{r}
-gtdbtk <- read_tsv(gtdbtk)
-
-gtdbtk_to_NCBI <- read_tsv(gtdbtk_to_NCBI)
-gtdbtk_to_NCBI <- gtdbtk_to_NCBI[-1,] #this removes the first row, which is an artifact of the dataframe before the python script was run
-
-IDs_for_paper <- read_tsv(IDs_for_paper)
-metadata <- read_tsv(metadata)
-
-genomeWide_compare <- read_tsv(genomeWide_compare)
-genomeWide_compare <- genomeWide_compare %>% 
-                              mutate(name1 = str_replace_all(name1, ".bam", "")) %>% 
-                              mutate(name2 = str_replace_all(name2, ".bam", "")) %>%
-                              mutate(genome = str_replace_all(genome, ".fna", ""))
-
-```
-
-Parsing out the NCBI classification by phylum, genus, etc.
-```{r}
-gtdbtk_to_NCBI <- gtdbtk_to_NCBI %>% separate(lineage, sep = ";", into = taxonomy_levels(), remove = F)
-gtdbtk_to_NCBI[is.na(gtdbtk_to_NCBI)] <- 'unclassified'
-```
-
-
-Combining GTDB-TK and NCBI results
-```{r}
-GTDBTk_NCBI <- full_join(gtdbtk, gtdbtk_to_NCBI, by = c("gtdbtk_mostgranular" = "gtdb_taxonomy"))
-```
-
-Adding GTDB-Tk and NCBI metadata to the inStrain output
-```{r}
-genomeWide_compare <- left_join(genomeWide_compare, GTDBTk_NCBI, by = c("genome" = "gtdbtk_user_genome"))
-```
-
-# Filtering the inStrain output by the IDs we are using for the study (this filters out 19 instances of `inStrain compare`)
-```{r}
-genomeWide_compare <- genomeWide_compare %>% subset(genomeWide_compare$name1 %in% IDs_for_paper$MomID |
-                                                         genomeWide_compare$name2 %in% IDs_for_paper$MomID |
-                                                         genomeWide_compare$name1 %in% IDs_for_paper$InfantID |
-                                                         genomeWide_compare$name2 %in% IDs_for_paper$InfantID)
-
-#Writing file for Hagay, so he can make the final figure (1/2)
-write_tsv(x=GTDBTk_NCBI, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/instrain_output_for_figure/SRGs_GTDBTk_NCBI.tsv")
-```
-
 # Analysis
 
+#Part I: The SSEs
 ```{r}
-metadata_cols <- c("ParticipantID","Infant1ID","Infant2ID","Infant3ID","InfantAdult","MotherID","SamplingLocation_2","SamplingLocation_1", "CurrCountry", "Age_months")
-metadata_cols <- metadata %>% select(metadata_cols)
-
-colnames(metadata_cols) <- paste("name1",colnames(metadata_cols),sep="_")
-
-add_metadata_name1 <- . %>% left_join(metadata_cols, by = c("name1" = "name1_ParticipantID"))
-
-genomeWide_compare <- genomeWide_compare %>% add_metadata_name1
-
-colnames(metadata_cols) <- colnames(metadata_cols) %>% str_replace_all("name1_", "")
-colnames(metadata_cols) <- paste("name2",colnames(metadata_cols),sep="_")
-add_metadata_name2 <- . %>% left_join(metadata_cols, by = c("name2" = "name2_ParticipantID"))
-
-genomeWide_compare <- genomeWide_compare %>% add_metadata_name2
-```
- 
-Adding whether each pair is a MIP or not
-```{r}
-make_new_columns <- . %>% 
-                              mutate(MIP = case_when(
-                                              name1_MotherID == name1  ~ '1',
-                                              name2_MotherID == name1  ~ '1',
-                                              name1_MotherID == name2  ~ '1',
-                                              name2_MotherID == name2  ~ '1',
-                                              TRUE ~ "0")) %>%
-                              mutate(MI = case_when(
-                                              name1_InfantAdult == "Adult" & name2_InfantAdult == "Infant"  ~ '1',
-                                              name1_InfantAdult == "Infant" & name1_InfantAdult == "Adult"  ~ '1',
-                                              TRUE ~ "0")) %>%
-                              mutate(SamplingLocation_2 = case_when(
-                                              name1_SamplingLocation_2 == name2_SamplingLocation_2  ~ '1',
-                                              TRUE ~ "0")) %>%
-                              mutate(SamplingLocation_1 = case_when(
-                                              name1_SamplingLocation_1 == name2_SamplingLocation_1  ~ '1',
-                                              TRUE ~ "0")) %>%
-                              mutate(CurrCountry = case_when(
-                                              name1_CurrCountry == name2_CurrCountry ~ '1',
-                                              TRUE ~ "0")) %>%
-                              mutate(Level = case_when(
-                                              MIP == 1 ~ 'MIP',
-                                              SamplingLocation_2 == 1 ~ 'SamplingLocation_2', 
-                                              SamplingLocation_1 == 1 ~ 'SamplingLocation_1',
-                                              CurrCountry == 1 ~ 'CurrCountry',
-                                              TRUE ~ "Inter-continental")) %>%
-                              mutate(Level_new = case_when(
-                                              MIP == 1 ~ 'MIP',
-                                              SamplingLocation_2 == 1 ~ 'Town/Village', 
-                                              SamplingLocation_1 == 1 ~ 'Region',
-                                              CurrCountry == 1 ~ 'Country',
-                                              TRUE ~ "International"))
-
-genomeWide_compare <- genomeWide_compare %>% make_new_columns
-comp50 <- subset(genomeWide_compare, percent_compared >= 0.50)
 comp50_popANI99999 <- subset(comp50, popANI >= 0.99999)
 ```
 
-Writing enhanced inStrain output file for Hagay to make final figure (2/2)
-```{r}
-#write_tsv(x=comp50, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/instrain_output_for_figure/instrain_comp50output_wmetadata.tsv")
-
-test change to file, testing ... testing test123 testi
-```
-
-
-#Part I: The SSEs
 ```{r}
 # Only 148 of the 118587 comparisons were within MIPs
 comp50 %>% count(MIP, sort = TRUE)
