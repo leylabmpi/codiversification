@@ -164,7 +164,7 @@ comp50 <- subset(genomeWide_compare, percent_compared >= 0.50)
 
 Writing comp50 file for strain-sharing analysis
 ```{r}
-#write_tsv(x=comp50, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv")
+write_tsv(x=comp50, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv")
 ```
 
 # Summary
