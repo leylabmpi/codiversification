@@ -1,7 +1,7 @@
 ---
 title: "inStrain Analysis"
-author: "Liam Fitzstevens"
-date: "14.09.21"
+author: "Liam Fitzstevens & Kelsey Huus"
+date: "17.09.21"
 output:
   html_document:
     code_folding: hide
@@ -21,7 +21,6 @@ knitr::opts_chunk$set(max.print = 100)
 options(bitmapType='cairo')
 ```
 
-
 # Introduction
 
 This script generates figure 4A, along with some additional overview information about the strain sharing events.
@@ -32,7 +31,6 @@ This script generates figure 4A, along with some additional overview information
 
 ```{r}
 comp50 = '/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv'
-comp <- read_tsv(comp50)
 ```
 
 **Libraries**
@@ -40,15 +38,18 @@ comp <- read_tsv(comp50)
 ```{r lib load, message=FALSE}
 library(dplyr)
 library(tidyr)
+library(RColorBrewer)
 library(ggplot2)
 library(readr)
+library(stringr)
 library(LeyLabRMisc)
 ```
 
 # Analysis
 
 ```{r}
-comp50_popANI99999 <- subset(comp50, popANI >= 0.99999)
+comp50 <- read_tsv(comp50)
+comp50_popANI99999 <- comp50 %>% subset(popANI >= 0.99999)
 ```
 
 ```{r}
@@ -74,91 +75,98 @@ comp50_popANI99999 %>% subset(MIP == 1) %>%
                                count(name1_SamplingLocation_1, sort = TRUE)
 
 # 36 of the VTEs were in Gabon, 18 in Germany and 11 in Vietnam
-top_taxa_VTEs_ncbi <- count(VTEs, ncbi_taxonomy)
 top_taxa_comp50_srg <- count(comp50, genome)
 
 phylum_sses <- count(comp50_popANI99999, Phylum, sort = TRUE)
 ```
 Figure 4A
 ```{r}
-#cols_old <- c("p__actinobacteria" = "red", "p__bacteroidetes" = "blue", "p__firmicutes" = "green", "p__proteobacteria" = "orange", "p__spirochaetes" = "pink", "p__tenericutes" = "yellow", "unclassified" = "purple")
 cols <- c("p__actinobacteria" = "#660099", "p__bacteroidetes" = "#FF0000", "p__firmicutes" = "#339933", "p__proteobacteria" = "#0000FF", "p__spirochaetes" = "#FF9900", "p__tenericutes" = "#744700", "unclassified" = "#0099FF")
 
-#Interrogating the SSEs
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/strainsharing_Gabon.pdf", width=6.75, height=5.75)
 gabon_SS <- comp50 %>%
   subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
   subset(popANI >= 0.99999) %>%
   arrange(Level_new) %>%
   mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
   ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="Gabonese Strain Sharing", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3,outlier.shape = NA)+
-  scale_colour_manual(values = cols) +#scale_color_brewer(palette="Set1")+
-  theme_bw()+
-  scale_colour_manual(
-      values = cols,
-      breaks = c("p__actinobacteria", "p__bacteroidetes", "p__firmicutes", "p__proteobacteria", "p__spirochaetes","p__tenericutes", "unclassified"),
-      labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified")
-    )+
-  scale_y_continuous(limit = c(0.9999900, 1.0000000))+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"),text = element_text(family = "Helvetica"))+
-  theme(axis.text=element_text(size=11),legend.title = element_text(face = "bold"),axis.title.y= element_text(face = "bold"))+
-  scale_x_discrete(name = "",
-                   label = c("Within\nMCP", "Within\nTown/Village", "Within\nRegion", "Within\nCountry", "Inter-\nNational"),
+    labs(title="Gabon", x="Level", y = "popANI")+
+    geom_boxplot(outlier.shape=NA, outlier.size=NA) +
+    geom_jitter(size=3, width=0.3, height=0,aes(color=Phylum))+
+    scale_y_continuous(limit = c(0.9999900, 1.0000000))+
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Helvetica"),
+          axis.text=element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"),
+          axis.title.x = element_text(margin = margin(t = 10)))+
+    scale_x_discrete(name = "",
+                   label = c("Mother-Child", "Town", "Region", "Country", "International"),
                    drop = FALSE)+
-  geom_jitter(aes(color=Phylum))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/gabon_strainsharing.png')
+    scale_colour_manual(
+        values = cols,
+        breaks = c("p__actinobacteria", "p__bacteroidetes", "p__firmicutes", "p__proteobacteria", "p__spirochaetes","p__tenericutes", "unclassified"),
+        labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified"))
+gabon_SS
+dev.off()
 
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/strainsharing_Vietnam.pdf", width=6.75, height=5.75)
 vietnam_SS <- comp50 %>%
   subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
   subset(popANI >= 0.99999) %>%
   arrange(Level_new) %>%
   mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
   ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="Vietnamese Strain Sharing", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3,outlier.shape = NA)+
-  scale_colour_manual(values = cols) +#scale_color_brewer(palette="Set1")+
-  theme_bw()+
-  scale_colour_manual(
-      values = cols,
-      breaks = c("p__actinobacteria", "p__bacteroidetes", "p__firmicutes", "p__proteobacteria", "p__spirochaetes","p__tenericutes", "unclassified"),
-      labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified")
-    )+
-  scale_y_continuous(limit = c(0.9999900, 1.0000000))+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"),text = element_text(family = "Helvetica"))+
-  theme(axis.text=element_text(size=11),legend.title = element_text(face = "bold"),axis.title.y= element_text(face = "bold"))+
-  scale_x_discrete(name = "",
-                   label = c("Within\nMCP", "Within\nTown/Village", "Within\nRegion", "Within\nCountry", "Inter-\nNational"),
+    labs(title="Vietnam", x="Level", y = "popANI")+
+    geom_boxplot(outlier.shape=NA, outlier.size=NA) +
+    geom_jitter(size=3, width=0.3, height=0,aes(color=Phylum))+
+    scale_y_continuous(limit = c(0.9999900, 1.0000000))+
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Helvetica"),
+          axis.text=element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"),
+          axis.title.x = element_text(margin = margin(t = 10)))+
+    scale_x_discrete(name = "",
+                   label = c("Mother-Child", "Town", "Region", "Country", "International"),
                    drop = FALSE)+
-  geom_jitter(aes(color=Phylum))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/vietnam_strainsharing.png')
+    scale_colour_manual(
+        values = cols,
+        breaks = c("p__actinobacteria", "p__bacteroidetes", "p__firmicutes", "p__proteobacteria", "p__spirochaetes","p__tenericutes", "unclassified"),
+        labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified"))
+vietnam_SS
+dev.off()
 
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/strainsharing_Germany.pdf", width=5.27, height=5.75)
 germany_SS <- comp50 %>%
   subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
   subset(popANI >= 0.99999) %>%
-  subset(Level_new == "MIP" | Level_new == "Town/Village" | Level_new == "International") %>%
   arrange(Level_new) %>%
   mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "International"))) %>%
   ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="German Strain Sharing", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3,outlier.shape = NA)+
-  scale_colour_manual(values = cols) +#scale_color_brewer(palette="Set1")+
-  theme_bw()+
-  scale_colour_manual(
-      values = cols,
-      breaks = c("p__actinobacteria", "p__bacteroidetes", "p__firmicutes", "p__proteobacteria", "p__spirochaetes","p__tenericutes", "unclassified"),
-      labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified")
-    )+
-  scale_y_continuous(limit = c(0.9999900, 1.0000000))+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"),text = element_text(family = "Helvetica"))+
-  theme(axis.text=element_text(size=11),legend.title = element_text(face = "bold"),axis.title.y= element_text(face = "bold"))+
-  scale_x_discrete(name = "",
-                   label = c("Within\nMCP", "Within\nTown/Village", "Inter-\nNational"),
+    labs(title="Germany", x="Level", y = "popANI")+
+    geom_boxplot(outlier.shape=NA, outlier.size=NA) +
+    geom_jitter(size=3, width=0.3, height=0,aes(color=Phylum))+
+    scale_y_continuous(limit = c(0.9999900, 1.0000000))+
+    theme(plot.title = element_text(hjust = 0.5),
+          text = element_text(family = "Helvetica"),
+          axis.text=element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"),
+          axis.title.x = element_text(margin = margin(t = 10)))+
+    scale_x_discrete(name = "",
+                   label = c("Mother-Child", "Town", "International"),
                    drop = FALSE)+
-  geom_jitter(aes(color=Phylum))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/germany_strainsharing.png')
+    scale_colour_manual(
+        values = cols,
+        breaks = c("p__actinobacteria", "p__bacteroidetes", "p__firmicutes", "p__proteobacteria", "p__spirochaetes","p__tenericutes", "unclassified"),
+        labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified"))
+germany_SS
+dev.off()
 ```
-
 # Summary
 
 Figure 4A's components are written.
