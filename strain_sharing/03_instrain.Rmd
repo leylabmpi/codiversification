@@ -51,7 +51,6 @@ library(LeyLabRMisc)
 
 # Analysis
 
-#Part I: The SSEs
 ```{r}
 comp50_popANI99999 <- subset(comp50, popANI >= 0.99999)
 ```
@@ -79,7 +78,7 @@ comp50_popANI99999 %>% subset(MIP == 1) %>%
                                count(name1_SamplingLocation_1, sort = TRUE)
 
 # 36 of the VTEs were in Gabon, 18 in Germany and 11 in Vietnam
-top_taxa_VTEs_ncbi <- count(VTEs, ncbi_taxonomy) #top_taxa_VTEs_srg <- count(VTEs, genome)
+top_taxa_VTEs_ncbi <- count(VTEs, ncbi_taxonomy)
 top_taxa_comp50_srg <- count(comp50, genome)
 
 phylum_sses <- count(comp50_popANI99999, Phylum, sort = TRUE)
@@ -113,73 +112,12 @@ ggplot(comp50 %>% filter(!is.na(Level)), aes(x=MIP, y=popANI)) +
   geom_violin()+
   theme(plot.title = element_text(hjust = 0.5))+
   geom_boxplot(width=0.1)
-
-comp50 %>%
-  subset(name1_Age_months > 0 | name2_Age_months > 0) %>%
-  mutate(name1_Age_months = if_else(is.na(name1_Age_months), 0, name1_Age_months)) %>%
-  mutate(name2_Age_months = if_else(is.na(name2_Age_months), 0, name2_Age_months)) %>%
-  mutate(Infant_AgeMonths = name1_Age_months + name2_Age_months) %>% 
-    ggplot(aes(x=Infant_AgeMonths, y=popANI, color = name1_CurrCountry)) +
-      labs(title="Strain Relatedness Over Infants' Lives", x="Infant Age (Months)", y = "popANI")+
-      geom_point()+
-      theme_light()+
-      geom_smooth(method=lm)+
-      theme(plot.title = element_text(hjust = 0.5))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/septlabmeetingfigs/comp50_popANI_infantage.png')
-
-comp50 %>%
-  subset(MIP == 1) %>% 
-  subset(name1_Age_months > 0 | name2_Age_months > 0) %>%
-  mutate(name1_Age_months = if_else(is.na(name1_Age_months), 0, name1_Age_months)) %>%
-  mutate(name2_Age_months = if_else(is.na(name2_Age_months), 0, name2_Age_months)) %>%
-  mutate(Infant_AgeMonths = name1_Age_months + name2_Age_months) %>% 
-    ggplot(aes(x=Infant_AgeMonths, y=popANI, color = name1_CurrCountry)) +
-      labs(title="Strain-Relatedness Over Infants' Lives: MCPs", x="Infant Age (Months)", y = "popANI")+
-      geom_point()+
-      theme_light()+
-      theme(plot.title = element_text(hjust = 0.5))+
-      geom_smooth(method=lm)
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/septlabmeetingfigs/wMCP_popANI_infantage.png')
-
-
-comp50 %>%
-  subset(name1_CurrCountry == "Vietnam") %>%
-  subset(name1_Age_months > 0 | name2_Age_months > 0) %>%
-  mutate(name1_Age_months = if_else(is.na(name1_Age_months), 0, name1_Age_months)) %>%
-  mutate(name2_Age_months = if_else(is.na(name2_Age_months), 0, name2_Age_months)) %>%
-  mutate(Infant_AgeMonths = name1_Age_months + name2_Age_months) %>% 
-    ggplot(aes(x=Infant_AgeMonths, y=popANI)) +
-      labs(title="Strain-Relatedness Over Infants' Lives: Vietnam Infants", x="Infant Age", y = "popANI")+
-      geom_point()+
-      stat_regline_equation(label.x=45, label.y=0.968) +
-      stat_cor(aes(label=..rr.label..), label.x=45, label.y=0.963) +
-      theme_light()+
-      geom_smooth(method=lm)+
-      theme(plot.title = element_text(hjust = 0.5))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/septlabmeetingfigs/comp50_popANI_infantageViet.png')
-
-comp50 %>%
-  subset(MIP == 1) %>% 
-  subset(name1_CurrCountry == "Vietnam") %>%
-  subset(name1_Age_months > 0 | name2_Age_months > 0) %>%
-  mutate(name1_Age_months = if_else(is.na(name1_Age_months), 0, name1_Age_months)) %>%
-  mutate(name2_Age_months = if_else(is.na(name2_Age_months), 0, name2_Age_months)) %>%
-  mutate(Infant_AgeMonths = name1_Age_months + name2_Age_months) %>% 
-    ggplot(aes(x=Infant_AgeMonths, y=popANI)) +
-      labs(title="Strain-Relatedness Over Infants' Lives: Vietnam Infants", x="Infant Age", y = "popANI")+
-      geom_point()+
-      stat_regline_equation(label.x=15, label.y=0.98) +
-      stat_cor(aes(label=..rr.label..), label.x=15, label.y=0.975) +
-      theme_light()+
-      geom_smooth(method=lm)+
-      theme(plot.title = element_text(hjust = 0.5))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/septlabmeetingfigs/wMCP_popANI_infantageViet.png')
 ```
 
-
-
+Figure 4, a-c
 ```{r}
-cols <- c("p__actinobacteria" = "red", "p__bacteroidetes" = "blue", "p__firmicutes" = "green", "p__proteobacteria" = "orange", "p__spirochaetes" = "pink", "p__tenericutes" = "yellow", "unclassified" = "purple")
+#cols_old <- c("p__actinobacteria" = "red", "p__bacteroidetes" = "blue", "p__firmicutes" = "green", "p__proteobacteria" = "orange", "p__spirochaetes" = "pink", "p__tenericutes" = "yellow", "unclassified" = "purple")
+cols <- c("p__actinobacteria" = "#660099", "p__bacteroidetes" = "#FF0000", "p__firmicutes" = "#339933", "p__proteobacteria" = "#0000FF", "p__spirochaetes" = "#FF9900", "p__tenericutes" = "#744700", "unclassified" = "#0099FF")
 
 #Interrogating the SSEs
 gabon_SS <- comp50 %>%
@@ -188,8 +126,9 @@ gabon_SS <- comp50 %>%
   arrange(Level_new) %>%
   mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
   ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="Strain Sharing Events in Gabon", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3)+
+  labs(title="Gabonese Strain Sharing", x="Level", y = "popANI")+
+  geom_boxplot(width=0.3,outlier.shape = NA)+
+  scale_colour_manual(values = cols) +#scale_color_brewer(palette="Set1")+
   theme_bw()+
   scale_colour_manual(
       values = cols,
@@ -197,15 +136,13 @@ gabon_SS <- comp50 %>%
       labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified")
     )+
   scale_y_continuous(limit = c(0.9999900, 1.0000000))+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"))+
-  theme(axis.text=element_text(size=11))+
+  theme(plot.title = element_text(hjust = 0.5, face="bold"),text = element_text(family = "Helvetica"))+
+  theme(axis.text=element_text(size=11),legend.title = element_text(face = "bold"),axis.title.y= element_text(face = "bold"))+
   scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
+                   label = c("Within\nMCP", "Within\nTown/Village", "Within\nRegion", "Within\nCountry", "Inter-\nNational"),
                    drop = FALSE)+
   geom_jitter(aes(color=Phylum))
-#ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/gabon_strainsharing.png')
-
-gabon_SS
+ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/gabon_strainsharing.png')
 
 vietnam_SS <- comp50 %>%
   subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
@@ -213,8 +150,8 @@ vietnam_SS <- comp50 %>%
   arrange(Level_new) %>%
   mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
   ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="Strain Sharing Events in Vietnam", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3)+
+  labs(title="Vietnamese Strain Sharing", x="Level", y = "popANI")+
+  geom_boxplot(width=0.3,outlier.shape = NA)+
   scale_colour_manual(values = cols) +#scale_color_brewer(palette="Set1")+
   theme_bw()+
   scale_colour_manual(
@@ -223,22 +160,23 @@ vietnam_SS <- comp50 %>%
       labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified")
     )+
   scale_y_continuous(limit = c(0.9999900, 1.0000000))+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"))+
-  theme(axis.text=element_text(size=11))+
+  theme(plot.title = element_text(hjust = 0.5, face="bold"),text = element_text(family = "Helvetica"))+
+  theme(axis.text=element_text(size=11),legend.title = element_text(face = "bold"),axis.title.y= element_text(face = "bold"))+
   scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
+                   label = c("Within\nMCP", "Within\nTown/Village", "Within\nRegion", "Within\nCountry", "Inter-\nNational"),
                    drop = FALSE)+
   geom_jitter(aes(color=Phylum))
-#ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/vietnam_strainsharing.png')
+ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/vietnam_strainsharing.png')
 
 germany_SS <- comp50 %>%
   subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
   subset(popANI >= 0.99999) %>%
+  subset(Level_new == "MIP" | Level_new == "Town/Village" | Level_new == "International") %>%
   arrange(Level_new) %>%
-  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
+  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "International"))) %>%
   ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="Strain Sharing Events in Germany", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3)+
+  labs(title="German Strain Sharing", x="Level", y = "popANI")+
+  geom_boxplot(width=0.3,outlier.shape = NA)+
   scale_colour_manual(values = cols) +#scale_color_brewer(palette="Set1")+
   theme_bw()+
   scale_colour_manual(
@@ -247,13 +185,13 @@ germany_SS <- comp50 %>%
       labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified")
     )+
   scale_y_continuous(limit = c(0.9999900, 1.0000000))+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"))+
-  theme(axis.text=element_text(size=11))+
+  theme(plot.title = element_text(hjust = 0.5, face="bold"),text = element_text(family = "Helvetica"))+
+  theme(axis.text=element_text(size=11),legend.title = element_text(face = "bold"),axis.title.y= element_text(face = "bold"))+
   scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
+                   label = c("Within\nMCP", "Within\nTown/Village", "Inter-\nNational"),
                    drop = FALSE)+
   geom_jitter(aes(color=Phylum))
-#ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/germany_strainsharing.png')
+ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/germany_strainsharing.png')
 
 # this didn't work so i combined them manually
 #ggarrange(gabon_SS, vietnam_SS,  common.legend = TRUE)
@@ -289,7 +227,7 @@ gabon_SS <- comp50 %>%
   ggplot(aes(x=Level_new, y=popANI)) +
   labs(title="popANI Cutoff Reduced to 99.9% (Gabon)", x="Level", y = "popANI")+
   geom_boxplot(width=0.3)+
-  scale_colour_manual(values = cols) +#scale_color_brewer(palette="Set1")+
+  scale_colour_manual(values = cols)+
   theme_bw()+
   scale_colour_manual(
       values = cols,
@@ -404,77 +342,6 @@ ggplot(comp50, aes(x=MIP, y=popANI)) +
   geom_boxplot(width=0.1)
 ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/MCP_srgrelatedness.png')
 ```
-```{r}
-comp50 %>%
-  subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
-  arrange(Level_new) %>%
-  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
-  ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="All Comparisons - Gabon", x="Level", y = "popANI")+
-  theme_light()+
-  geom_violin()+
-  scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
-                   drop = FALSE)+
-  geom_boxplot(width=0.1)
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/gabon_comp50.png')
-
-comp50 %>%
-  subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
-  arrange(Level_new) %>%
-  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
-  ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="All Comparisons - Vietnam", x="Level", y = "popANI")+
-  theme_light()+
-  geom_violin()+
-  scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
-                   drop = FALSE)+
-  geom_boxplot(width=0.1)
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/vietnam_comp50.png')
-
-comp50 %>%
-  subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
-  arrange(Level_new) %>%
-  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
-  ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="All Comparisons - Germany", x="Level", y = "popANI")+
-  theme_light()+
-  geom_violin()+
-  scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
-                   drop = FALSE)+
-  geom_boxplot(width=0.1)
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/germany_comp50.png')
-
-comp50 %>%
-  arrange(Level_new) %>%
-  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
-  ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="All Comparisons; All Countries", x="Level", y = "popANI")+
-  theme_light()+
-  geom_violin()+
-  scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
-                   drop = FALSE)+
-  geom_boxplot(width=0.1)
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/allcountries_comp50.png')
-```
-
-```{r}
-test <- metadata %>%
-  subset(SamplingLocation_1 == "Field") %>%
-  select(SamplingLocation_2) %>%
-  dplyr::distinct()
-  
-
-dplyr::distinct(test)
-```
-
-
-# Columns for Hagay (conversation notes)
-Sample1, Sample2, popANI, MIP (yes/no), species name
-
 
 # Summary
 
