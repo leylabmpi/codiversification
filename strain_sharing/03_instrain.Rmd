@@ -24,7 +24,7 @@ options(bitmapType='cairo')
 
 # Introduction
 
-Here I will perform strain-sharing analysis using inStrain's output
+This script generates figure 4A, along with some additional overview information about the strain sharing events.
 
 # Setup
 
@@ -42,11 +42,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(readr)
-library(stringr)
-library(ggpubr)
 library(LeyLabRMisc)
-#library(ape)
-#library(vegan)
 ```
 
 # Analysis
@@ -69,9 +65,9 @@ comp50_popANI99999 %>% subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry
 # 18 SSE in Germany; 100% were within MCPs
 comp50_popANI99999 %>% subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>% count(Level, sort = TRUE)
 
-HTEs <- comp50_popANI99999 %>% subset(MIP == 0) %>%
+comp50_popANI99999 %>% subset(MIP == 0) %>%
                                count(ncbi_taxonomy, name1_SamplingLocation_1, sort = TRUE)
-VTEs <- comp50_popANI99999 %>% subset(MIP == 1) %>%
+comp50_popANI99999 %>% subset(MIP == 1) %>%
                               count(ncbi_taxonomy, name1_SamplingLocation_1, sort = TRUE)
 
 comp50_popANI99999 %>% subset(MIP == 1) %>%
@@ -82,39 +78,8 @@ top_taxa_VTEs_ncbi <- count(VTEs, ncbi_taxonomy)
 top_taxa_comp50_srg <- count(comp50, genome)
 
 phylum_sses <- count(comp50_popANI99999, Phylum, sort = TRUE)
-
-comp50_popANI99999 %>% 
-    count(Phylum, sort = TRUE) %>% 
-    ggplot(aes(x=reorder(Phylum, -n), y = n))+ # add , fill = name1_SamplingLocation_1)?xt
-    geom_bar(stat="identity", fill="steelblue")+
-    labs(title="Phyla of Shared Strains",x="Phylum", y = "Number of Strain-Sharing Events")+
-    theme_light()+
-    theme(axis.text.x = element_text(angle = 30, hjust=0.90))+
-    theme(plot.title = element_text(hjust = 0.5))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/sharedstrain_phyla.png')
-
-comp50_popANI99999 %>%
-    subset(MIP == 1) %>% 
-    count(Phylum, sort = TRUE) %>% 
-    ggplot(aes(x=reorder(Phylum, -n), y = n))+ # add , fill = name1_SamplingLocation_1)?xt
-    geom_bar(stat="identity", fill="steelblue")+
-    labs(title="Phyla of Shared Strains: MCPs",x="Phylum", y = "Number of Strain-Sharing Events")+
-    theme_light()+
-    theme(axis.text.x = element_text(angle = 30, hjust=0.90))+
-    theme(plot.title = element_text(hjust = 0.5))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/sharedstrain_phylaMCPs.png')
 ```
-
-```{r}
-ggplot(comp50 %>% filter(!is.na(Level)), aes(x=MIP, y=popANI)) +
-  labs(title="Degree of SRG Relatedness", x="MIP", y = "popANI")+
-  theme_light()+
-  geom_violin()+
-  theme(plot.title = element_text(hjust = 0.5))+
-  geom_boxplot(width=0.1)
-```
-
-Figure 4, a-c
+Figure 4A
 ```{r}
 #cols_old <- c("p__actinobacteria" = "red", "p__bacteroidetes" = "blue", "p__firmicutes" = "green", "p__proteobacteria" = "orange", "p__spirochaetes" = "pink", "p__tenericutes" = "yellow", "unclassified" = "purple")
 cols <- c("p__actinobacteria" = "#660099", "p__bacteroidetes" = "#FF0000", "p__firmicutes" = "#339933", "p__proteobacteria" = "#0000FF", "p__spirochaetes" = "#FF9900", "p__tenericutes" = "#744700", "unclassified" = "#0099FF")
@@ -142,7 +107,7 @@ gabon_SS <- comp50 %>%
                    label = c("Within\nMCP", "Within\nTown/Village", "Within\nRegion", "Within\nCountry", "Inter-\nNational"),
                    drop = FALSE)+
   geom_jitter(aes(color=Phylum))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/gabon_strainsharing.png')
+ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/gabon_strainsharing.png')
 
 vietnam_SS <- comp50 %>%
   subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
@@ -166,7 +131,7 @@ vietnam_SS <- comp50 %>%
                    label = c("Within\nMCP", "Within\nTown/Village", "Within\nRegion", "Within\nCountry", "Inter-\nNational"),
                    drop = FALSE)+
   geom_jitter(aes(color=Phylum))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/vietnam_strainsharing.png')
+ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/vietnam_strainsharing.png')
 
 germany_SS <- comp50 %>%
   subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
@@ -191,161 +156,12 @@ germany_SS <- comp50 %>%
                    label = c("Within\nMCP", "Within\nTown/Village", "Inter-\nNational"),
                    drop = FALSE)+
   geom_jitter(aes(color=Phylum))
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/germany_strainsharing.png')
-
-# this didn't work so i combined them manually
-#ggarrange(gabon_SS, vietnam_SS,  common.legend = TRUE)
-#ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/3countries_strainsharing.png')
-```
-
-
-Running an ANOVA + Tukey HSD on the intra-country SSE differences by different geographic level
-```{r}
-anova_df <- comp50_popANI99999 %>% subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon")
-# Compute the analysis of variance
-res.aov <- aov(popANI ~ Level, data = anova_df)
-# Summary of the analysis
-summary(res.aov)
-TukeyHSD(res.aov)
-
-anova_df <- comp50_popANI99999 %>% subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam")
-# Compute the analysis of variance
-res.aov <- aov(popANI ~ Level, data = anova_df)
-# Summary of the analysis
-summary(res.aov)
-TukeyHSD(res.aov)
-```
-
-#Part II: The inStrain comparisons with popANI <= 99.999%
-
-```{r}
-gabon_SS <- comp50 %>%
-  subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
-  subset(popANI >= 0.999) %>%
-  arrange(Level_new) %>%
-  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
-  ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="popANI Cutoff Reduced to 99.9% (Gabon)", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3)+
-  scale_colour_manual(values = cols)+
-  theme_bw()+
-  scale_colour_manual(
-      values = cols,
-      breaks = c("p__actinobacteria", "p__bacteroidetes", "p__firmicutes", "p__proteobacteria", "p__spirochaetes","p__tenericutes", "unclassified"),
-      labels = c("Actinobacteria", "Bacteroidetes", "Firmicutes", "Proteobacteria", "Spirochaetes","Tenericutes", "Unclassified")
-    )+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"))+
-  theme(axis.text=element_text(size=11))+
-  scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
-                   drop = FALSE)+
-  geom_jitter(aes(color=Phylum))
-#ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/gabon_relaxedpopANI.png')
-
-gabon_SS <- comp50 %>%
-  subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
-  subset(popANI >= 0.999) %>%
-  arrange(Level_new) %>%
-  mutate(Level_new = factor(Level_new, levels=c("MIP", "Town/Village", "Region", "Country", "International"))) %>%
-  ggplot(aes(x=Level_new, y=popANI)) +
-  labs(title="popANI Cutoff Reduced to 97% (Gabon)", x="Level", y = "popANI")+
-  geom_boxplot(width=0.3)+
-  scale_color_brewer(palette="Set1")+
-  theme_bw()+
-  theme(plot.title = element_text(hjust = 0.5, face="bold"))+
-  theme(axis.text=element_text(size=11))+
-  scale_x_discrete(name = "",
-                   label = c("MIP", "Town/Village", "Region", "Country", "International"),
-                   drop = FALSE)+
-  geom_jitter(aes(color=Phylum))
-#ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/gabon_999popANI.png')
-```
-
-
-There are 377 unique SRGs 
-```{r}
-unique_srgs_gtdbtk <- unique(comp50$genome)
-unique_srgs_ncbi <- unique(comp50$ncbi_taxonomy)
-
-length(unique_srgs)
-
-top_taxa_50comp_gtdbtk <- count(comp50, genome)
-top_taxa_50comp_ncbi <- count(comp50, ncbi_taxonomy)
-
-top_taxa <- left_join(top_taxa_50comp_ncbi, gtdbtk, by = c("ncbi_taxonomy" = "gtdbtk_user_genome"))
-
-top_3taxa <- subset(top_taxa, n > 1000)
-top_3taxa_list <- top_3taxa$ncbi_taxonomy
-
-comp50_test <- subset(comp50, ncbi_taxonomy %in% top_3taxa_list)
-```
-
-```{r}
-ggplot(comp50_test, aes(x=popANI, y=ncbi_taxonomy), fill=MIP) +
-  labs(title="7 Most Prevelant SRGs",x="popANI", y = "SRG")+
-  theme_light()+
-  geom_boxplot(aes(colour = MIP))+
-  theme(plot.title = element_text(hjust = 0.5))
-```
-^ This plot shows how not all SRGs have >=0 MIPs that share them. We need to filter those out...
-
-There are 55 SRGs that include at least 1 MIP-sharing
-```{r}
-comp50_noAAsIIs <- comp50 %>% filter(!(name1_InfantAdult == name2_InfantAdult))
-
-taxa_wMIPs <- subset(comp50_noAAsIIs, MIP == 1)
-
-unique_srgs_wMIPs <- unique(taxa_wMIPs$genome)
-unique_ncbiclass_wMIPs <- unique(taxa_wMIPs$ncbi_taxonomy)
-
-top_srgs_wMIPs <- count(taxa_wMIPs, genome)
-top_ncbiclass_wMIPs <- count(taxa_wMIPs, ncbi_taxonomy)
-
-top_srgs_wMIPs <- left_join(top_srgs_wMIPs, gtdbtk, by = c("genome" = "gtdbtk_user_genome"))
-#top_ncbiclass_wMIPs <- left_join(top_ncbiclass_wMIPs, GTDBTk_NCBI, by = c("ncbi_taxonomy" = "ncbi_taxonomy"))
-
-top_srgs_wMIPs <- subset(top_srgs_wMIPs, n > 4)
-top_taxa_wMIPs_list <- top_srgs_wMIPs$genome
-
-top_ncbiclass_wMIPs <- subset(top_ncbiclass_wMIPs, n > 3)
-top_ncbiclass_wMIPs_list <- top_ncbiclass_wMIPs$ncbi_taxonomy
-
-comp50_wMIPs_gtdbtk <- subset(comp50, genome == top_taxa_wMIPs_list)
-comp50_wMIPs_ncbi <- subset(comp50, ncbi_taxonomy == top_ncbiclass_wMIPs_list)
-```
-
-```{r}
-ggplot(comp50_wMIPs_gtdbtk, aes(x=popANI, y=gtdbtk_species), fill=MIP) +
-  labs(title="SRG Sharing (GTDB-Tk)",x="popANI", y = "SRG")+
-  theme_light()+
-  geom_boxplot(aes(colour = MIP))+
-  theme(plot.title = element_text(hjust = 0.5))
-#ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/labmeeting_analysis_figures/SSG_sharing_50perccompl.png')
-```
-
-```{r}
-ggplot(comp50_wMIPs_ncbi, aes(x=popANI, y=ncbi_taxonomy), fill=MIP) +
-  labs(title="NCBI Taxon Relatedness",x="popANI", y = "SRG")+
-  theme_light()+
-  geom_boxplot(aes(colour = MIP))+
-  theme(plot.title = element_text(hjust = 0.5))
-```
- 
-Part II: Expanding outside of the strict definition of recent transmission event (i.e., where popANI < 99.999%)
-```{r}
-#friday september 3rd, midnight
-ggplot(comp50, aes(x=MIP, y=popANI)) +
-  labs(title="Degree of SRG Relatedness", x="MCP", y = "popANI")+
-  theme_light()+
-  geom_violin()+
-  theme(plot.title = element_text(hjust = 0.5))+
-  geom_boxplot(width=0.1)
-ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/earlysept_analysis_figures/MCP_srgrelatedness.png')
+ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/germany_strainsharing.png')
 ```
 
 # Summary
 
-
+Figure 4A's components are written.
 
 ***
 
