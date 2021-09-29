@@ -304,7 +304,7 @@ Notepad (i.e., old code)
 ```{r}
 cols <- c("p__actinobacteria" = "#660099", "p__bacteroidetes" = "#FF0000", "p__firmicutes" = "#339933", "p__proteobacteria" = "#0000FF", "p__spirochaetes" = "#FF9900", "p__tenericutes" = "#744700", "unclassified" = "#0099FF")
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Gabon.pdf", width=6.75, height=5.75)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Gabon_old.pdf", width=6.75, height=5.75)
 gabon_SS <- comp50 %>%
   subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
   subset(popANI >= 0.99999) %>%
@@ -332,7 +332,7 @@ gabon_SS <- comp50 %>%
 gabon_SS
 dev.off()
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Vietnam.pdf", width=6.75, height=5.75)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Vietnam_old.pdf", width=6.75, height=5.75)
 vietnam_SS <- comp50 %>%
   subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
   subset(popANI >= 0.99999) %>%
@@ -360,7 +360,7 @@ vietnam_SS <- comp50 %>%
 vietnam_SS
 dev.off()
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Germany.pdf", width=5.27, height=5.75)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Germany_old.pdf", width=5.27, height=5.75)
 germany_SS <- comp50 %>%
   subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
   subset(popANI >= 0.99999) %>%
