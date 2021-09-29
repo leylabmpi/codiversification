@@ -145,6 +145,9 @@ make_new_columns <- . %>%
                               mutate(CurrCountry = case_when(
                                               name1_CurrCountry == name2_CurrCountry ~ '1',
                                               TRUE ~ "0")) %>%
+                              mutate(SSE = case_when(
+                                              popANI >= 0.99999 ~ '1',
+                                              TRUE ~ "0")) %>%
                               mutate(Level = case_when(
                                               MIP == 1 ~ 'MIP',
                                               SamplingLocation_2 == 1 ~ 'SamplingLocation_2', 
@@ -166,6 +169,15 @@ Writing comp50 file for strain-sharing analysis
 ```{r}
 write_tsv(x=comp50, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv")
 ```
+
+Identifiying different locations for coordinate analysis
+```{r}
+levels(as.factor(metadata$SamplingLocation_2))
+levels(as.factor(comp50$name2_SamplingLocation_2))
+
+comp50 %>% filter(name1_SamplingLocation_2 == "Tranquille")
+```
+
 
 # Summary
 

@@ -1,7 +1,7 @@
 ---
 title: "inStrain Analysis"
 author: "Liam Fitzstevens & Kelsey Huus"
-date: "17.09.21"
+date: "29.09.21"
 output:
   html_document:
     code_folding: hide
@@ -23,7 +23,7 @@ options(bitmapType='cairo')
 
 # Introduction
 
-This script generates figure 4A, along with some additional overview information about the strain sharing events.
+This script generates figure 4B, along with additional overview information about the strain sharing events and statistical analysis.
 
 # Setup
 
@@ -31,6 +31,12 @@ This script generates figure 4A, along with some additional overview information
 
 ```{r}
 comp50 = '/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv'
+```
+
+**Misc init**
+
+```{r misc init}
+set.seed(8374)   
 ```
 
 **Libraries**
@@ -43,6 +49,7 @@ library(ggplot2)
 library(readr)
 library(stringr)
 library(LeyLabRMisc)
+library(ggpattern)
 ```
 
 # Analysis
@@ -53,11 +60,13 @@ comp50_popANI99999 <- comp50 %>% subset(popANI >= 0.99999)
 ```
 
 ```{r}
-# Only 148 of the 118587 comparisons were within MIPs
+# Only 148 of the 93578 comparisons were within MCPs (0.16%)
 comp50 %>% count(MIP, sort = TRUE)
 
-# 158; 65 were within MIPs and 93 were between unpaired MIPS or mother-mother/child-child
+# 158 SSEs; 65 were within MCPs (41%) and 93 were between unpaired MCPS or mother-mother/child-child (59%)
 comp50_popANI99999 %>% count(MIP, sort = TRUE)
+
+# In summary, 44% (65/148) of all comparisons made b/w MCPs were SSEs; 0.0995% (93/93430) of all non-MCP comparisons were SSEs
 
 # 102 SSE in Gabon; 36 (35%) were within MCPs; 53 (52%) were at town/village; 13 (13%) were at region lvl
 comp50_popANI99999 %>% subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>% count(Level, sort = TRUE)
@@ -79,11 +88,223 @@ top_taxa_comp50_srg <- count(comp50, genome)
 
 phylum_sses <- count(comp50_popANI99999, Phylum, sort = TRUE)
 ```
-Figure 4A
+
+Subsetting to only mother-infant comparisons (both own child and not own child)
+```{r}
+comp50_MCs <- comp50 %>% subset(MI == 1)
+```
+
+
+New Figure 4Bi - Gabonese mother-infant comparisons
+```{r}
+# 1ST plot
+# 8721 comparisons; 65 were within MCPs (0.74%)
+comp50_MCs %>% subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
+           count(MIP, sort = TRUE)
+
+# 56 SSEs; 36 were within MCPs (64%) and 20 were between unpaired MCPs (36%)
+comp50_MCs %>% subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
+                      subset(SSE == 1) %>%
+                      count(Level_new, sort = TRUE)
+# In summary, 55% (36/65) of all comparisons made b/w MCPs were SSEs; 65 of all 8721 (0.74%) comparisons were made w/n MCPs
+
+# 2ND plot - within town (of collection)
+comp50_MCs %>% subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
+               subset(SamplingLocation_2 == 1) %>%
+               subset(MIP == 0) %>%
+               count(SSE, sort = TRUE)
+# In summary, 1.34% (17/1267) of all comparisons made w/n towns were SSEs; 1267 of all 8721 (14.5%) comparisons were made within towns
+
+# 3RD plot - between towns
+comp50_MCs %>% subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
+           subset(SamplingLocation_2 == 0) %>%
+           subset(MIP == 0) %>%
+           count(SSE, sort = TRUE)
+# In summary, 0.04% (3/7387) of all comparisons made b/w towns were SSEs; 7387 of all 8721 (85%) comparisons were made between towns
+
+
+dat_Gabon <- data.frame(
+    cat = as.factor(c("Related","Unrelated\n(same location)","Unrelated\n(different location)")),
+    perc_ss = c((36/56)*100, (17/56)*100, (3/56)*100),
+    perc_totalnation = c(0.74,14,85)
+)
+dat_Gabon <- dat_Gabon %>%
+  gather("Stat", "Value", -cat)
+
+level_order <- c("Related","Unrelated\n(same location)","Unrelated\n(different location)")
+
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/StrainSharing_Gabon.pdf", width=5.3, height=3.639)
+Gabon_ss <- ggplot(dat_Gabon, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+  geom_col(position = "dodge", width = 0.7) +
+  ggtitle("Gabon")+
+  scale_fill_manual(labels = c("Strain sharing events", "All pairwise comparisons"), values=c("#FF0000", "black"))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(family = "Helvetica", size = 12),
+        axis.text.x = element_text(angle = 40, hjust=1),
+        axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
+        legend.title = element_blank())+
+  scale_y_continuous("Percentage (%)", limits=c(0, 115), breaks = (seq(0, 100, by = 25)))+
+  annotate("text", label="***", x=1, y=86, size = 6, fontface = "bold")+ #P = 1.9e-70
+  annotate("segment", x=0.80, xend=1.20, y=78, yend=78)+
+  annotate("text", label="*", x=2, y=48, size = 6, fontface = "bold")+ #P = 1.0e-3
+  annotate("segment", x=1.80, xend=2.20, y=41, yend=41)
+Gabon_ss
+dev.off()
+```
+
+New Figure 4Bi - Vietnam mother-infant comparisons
+```{r}
+# 1ST plot
+# 12686 comparisons; 43 were within MCPs (0.33%)
+comp50_MCs %>% subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
+           count(MIP, sort = TRUE)
+
+# 16 SSEs; 11 were within MCPs (69%) and 5 were between unpaired MCPs (45%)
+comp50_MCs %>% subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
+                      subset(SSE == 1) %>%
+                      count(Level_new, sort = TRUE)
+# 11/16 (69%) SSEs were within MCPs; 5/16 (31%) were within town
+# 25.6% (11/43) of all comparisons made b/w MCPs were SSEs; 43 of all 8721 (0.33%) comparisons were made w/n MCPs
+
+# 2ND plot - within town (of collection)
+comp50_MCs %>% subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
+               subset(SamplingLocation_2 == 1) %>%
+               subset(MIP == 0) %>%
+               count(SSE, sort = TRUE)
+# Summary style 1: 11/16 (69%) SSEs were within MCPs; 5/16 (31%) were within town
+# In summary, 0.87% (5/575) of all comparisons made w/n towns were SSEs; 575 of all 12686 (4.53%) comparisons were made within towns
+
+# 3RD plot - between towns
+comp50_MCs %>% subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
+           subset(SamplingLocation_2 == 0) %>%
+           subset(MIP == 0) %>%
+           count(SSE, sort = TRUE)
+# In summary, 0 of the comparisons made b/w towns were SSEs; 12111 of all 12686 (95.5%) comparisons were made between towns
+
+dat_Vietnam <- data.frame(
+    cat = as.factor(c("Related","Unrelated\n(same location)","Unrelated\n(different location)")),
+    perc_ss = c(69, 31, 0),
+    perc_totalnation = c(0.33,4.53,95.5)
+)
+
+dat_Vietnam <- dat_Vietnam %>%
+  gather("Stat", "Value", -cat)
+
+level_order <- c("Related","Unrelated\n(same location)","Unrelated\n(different location)")
+
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/StrainSharing_Vietnam.pdf", width=5.3, height=3.639)
+Vietnam_ss <- ggplot(dat_Vietnam, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+  geom_col(position = "dodge", width = 0.7) +
+  ggtitle("Vietnam")+
+  scale_fill_manual(labels = c("Strain sharing events", "All pairwise comparisons"), values=c("#FF0000", "black"))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(family = "Helvetica", size = 12),
+        axis.text.x = element_text(angle = 40, hjust=1),
+        axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
+        legend.title = element_blank())+
+  scale_y_continuous("Percentage (%)", limits=c(0, 115), breaks = (seq(0, 100, by = 25)))+
+  annotate("text", label="**", x=1, y=86, size = 6, fontface = "bold")+ # P = 2.1e-27
+  annotate("segment", x=0.80, xend=1.20, y=78, yend=78)+
+  annotate("text", label="*", x=2, y=48, size = 6, fontface = "bold")+ # P = 9.3e-5
+  annotate("segment", x=1.80, xend=2.20, y=41, yend=41)
+Vietnam_ss
+dev.off()
+```
+New Figure 4Biii - German mother-infant comparisons
+```{r}
+# 1ST plot
+# 9003 comparisons; 40 were within MCPs (0.44%)
+comp50_MCs %>% subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
+           count(MIP, sort = TRUE)
+
+# 18 SSEs; 18 were within MCPs (100%)
+comp50_MCs %>% subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
+                      subset(SSE == 1) %>%
+                      count(MIP, sort = TRUE)
+# In summary, 45% (18/40) of all comparisons made b/w MCPs were SSEs; 40 of all 9003 (0.44%) comparisons were made w/n MCPs
+
+# 2ND plot - within town (of collection)
+comp50_MCs %>% subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
+               subset(MIP == 0) %>%
+               count(SSE, sort = TRUE)
+# In summary, 0% (0/8963) of all comparisons made w/n towns were SSEs; 8963 of all 9003 (99.56%) comparisons were made within towns
+
+dat_Germany <- data.frame(
+    cat = as.factor(c("Related","Unrelated\n(same location)")), # there were no between town comparisons; this is just a placeholder for purposes of aesthetically-matching figures with Gabon and Vietnam
+    perc_ss = c((18/18)*100, (0/18)*100),
+    perc_totalnation = c(0.44, 99.56)
+)
+dat_Germany <- dat_Germany %>%
+  gather("Stat", "Value", -cat)
+
+level_order <- c("Related","Unrelated\n(same location)")# there were no between town comparisons; this is just a placeholder for purposes of aesthetically-matching figures with Gabon and Vietnam
+
+ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+  geom_col(position = "dodge")
+
+
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/StrainSharing_Germany.pdf", width=5.3, height=3.52)
+Germany_ss <- ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+  geom_col(position = "dodge", width = 0.47) +
+  ggtitle("Germany")+
+  scale_fill_manual(labels = c("Strain sharing events", "All pairwise comparisons"), values=c("#FF0000", "black"))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title.x=element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(family = "Helvetica", size = 12),
+        axis.text.x = element_text(angle = 40, hjust=1),
+        axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
+        legend.title = element_blank())+
+  scale_y_continuous("Percentage (%)", limits=c(0, 115), breaks = (seq(0, 100, by = 25)))+
+  annotate("segment", x=0.80, xend=1.20, y=107, yend=107)+
+  annotate("text", x=1, y=113, label="***", size = 6, fontface = "bold") # P = 
+Germany_ss
+dev.off()
+```
+
+Statistics
+Hypoergeometric calculations for each country
+```{r}
+# Gabon - Related MCs
+phyper(36,56,8656,65, lower.tail = FALSE)
+# Gabon - Unrelated: within-towns
+phyper(17,56,8656,1267, lower.tail = FALSE)
+# Gabon - Unrelated: between-towns
+phyper(3,56,8656,7387, lower.tail = FALSE)
+
+# Vietnam - Related MCs
+phyper(11,16,12643,43, lower.tail = FALSE)
+# Vietnam - Unrelated: within-towns
+phyper(5,16,12643,575, lower.tail = FALSE)
+# Vietnam - Unrelated: between-towns
+phyper(0,16,12643,1211, lower.tail = FALSE)
+
+# Germany - Related MCs
+phyper(18,18,8963,40, lower.tail = FALSE)
+# Germany - Unrelated: within-towns
+phyper(0,18,8963,8963, lower.tail = FALSE)
+```
+
+Adjusting p-values for multiple comparisons
+```{r}
+p_values <- c(1.919168e-70,0.0006540986,1,7.865622e-28,4.636454e-05,0.8000839,0,1)
+
+p.adjust(p_values, method = "BH", n = length(p_values))
+```
+
+
+Notepad (i.e., old code)
 ```{r}
 cols <- c("p__actinobacteria" = "#660099", "p__bacteroidetes" = "#FF0000", "p__firmicutes" = "#339933", "p__proteobacteria" = "#0000FF", "p__spirochaetes" = "#FF9900", "p__tenericutes" = "#744700", "unclassified" = "#0099FF")
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/strainsharing_Gabon.pdf", width=6.75, height=5.75)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Gabon.pdf", width=6.75, height=5.75)
 gabon_SS <- comp50 %>%
   subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon") %>%
   subset(popANI >= 0.99999) %>%
@@ -111,7 +332,7 @@ gabon_SS <- comp50 %>%
 gabon_SS
 dev.off()
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/strainsharing_Vietnam.pdf", width=6.75, height=5.75)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Vietnam.pdf", width=6.75, height=5.75)
 vietnam_SS <- comp50 %>%
   subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vietnam") %>%
   subset(popANI >= 0.99999) %>%
@@ -139,7 +360,7 @@ vietnam_SS <- comp50 %>%
 vietnam_SS
 dev.off()
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/strainsharing_Germany.pdf", width=5.27, height=5.75)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/StrainSharing_Germany.pdf", width=5.27, height=5.75)
 germany_SS <- comp50 %>%
   subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Germany") %>%
   subset(popANI >= 0.99999) %>%
@@ -169,7 +390,7 @@ dev.off()
 ```
 # Summary
 
-Figure 4A's components are written.
+Figure 4B's components are written and the statistics for the strain-sharing analysis were performed.
 
 ***
 
