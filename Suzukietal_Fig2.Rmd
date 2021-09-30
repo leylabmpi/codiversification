@@ -1,0 +1,173 @@
+---
+title: "Suzuki&Fitzstevens_Fig2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/ownCloud/KH-Postdoc/Manuscripts/cophylogeny_paper_Taichi&Liam")
+
+library(ggplot2)
+library(RColorBrewer)
+library(dplyr)
+
+```
+
+## R Markdown - Fig 2: Stats & Plotting
+
+```{r read data}
+Fig2A <- read.delim("Fig.2A_data.txt")
+Fig2B <- read.delim("Fig.2B_data.txt")
+Fig2C <- read.delim("Fig.2C_data.txt")
+
+#rearrange Fig 2A data for plotting
+firmicutes = data.frame(Cophylogeny=Fig2A$Firmicutes,
+                        Phylum=c("Firmicutes"))
+bacteroidetes = data.frame(Cophylogeny=Fig2A$Bacteroidetes,
+                        Phylum=c("Bacteroidetes"))
+others = data.frame(Cophylogeny=Fig2A$Others,
+                              Phylum=c("Other"))
+
+pdata_Fig2A <- Reduce(full_join, list(firmicutes, bacteroidetes, others))
+
+```
+
+### Fig 2A
+```{r Fig 2A, warnings=FALSE, width=3, height=3}
+pdata_Fig2A$Phylum <- factor(pdata_Fig2A$Phylum, levels=c("Firmicutes",
+                                                          "Bacteroidetes",
+                                                          "Other"))
+labels_a = c("Firmicutes\n(n=33)", "Bacteroidetes\n(n=18)", "Other phyla\n(n=5)")
+
+#plot
+pa <- ggplot(pdata_Fig2A, aes(x=Phylum, y=Cophylogeny)) + geom_boxplot(outlier.shape=NA, outlier.size=NA) + geom_jitter(size=3, width=0.2, height=0)
+pa <- pa + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        axis.title.y = element_text(margin = margin(r = 10))
+        )
+pa <- pa + scale_x_discrete(labels = labels_a)
+pa <- pa + scale_y_continuous(breaks = (seq(0, 6, by = 1)))
+pa <- pa + ylab("Cophylogeny index") + xlab(NULL)
+pa <- pa + theme(text = element_text(family = "Helvetica"))
+pa <- pa + annotate("text", label="P = 3.7e-6", x=1.5, y=7.5)
+pa <- pa + annotate("segment", x=1, xend=2, y=7, yend=7)
+pa
+
+#statistics
+quantile(firmicutes$Cophylogeny)
+quantile(bacteroidetes$Cophylogeny, na.rm=TRUE)
+
+#axis.text.x=element_text(size=12)
+wilcox.test(firmicutes$Cophylogeny, bacteroidetes$Cophylogeny, na.rm=TRUE)
+
+```
+
+### Fig 2B
+```{r Fig 2B, warnings=FALSE, width=3, height=3}
+#plot main Fig 2B
+pb <- ggplot(Fig2B, aes(x=rank, y=genome_size)) + geom_point(size=3) + geom_smooth(method='lm', colour="grey")
+pb <- pb + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                 panel.background = element_blank(), axis.line = element_line(colour = "black"))
+pb <- pb + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
+pb <- pb + xlab("Cophylogeny index") + ylab("Genome size (Mbp)")
+pb <- pb + annotate("text", label="P = 2.8e-4\nRho = -0.47", x=4, y=7)
+pb <- pb + theme(text = element_text(family = "Helvetica"))
+pb <-  pb + ylim(1,8)
+pb
+
+#stats main Fig 2B
+cor.test(Fig2B$rank, Fig2B$genome_size, method='spearman')
+
+#plot supplemental Fig - by genus
+#make a group for only genera found ≥2 times
+Fig2B$Genus <- ifelse(Fig2B$genus %in% Fig2B[which(duplicated(Fig2B$genus)),]$genus, 
+                      yes=Fig2B$genus, no="Other")
+
+#order the genera
+Fig2B$Genus <- factor(Fig2B$Genus, levels=c("Alistipes",
+                                               "Bacteroides",
+                                               "Bifidobacterium",
+                                               "Coprococcus",
+                                               "Dorea",
+                                               "Eubacterium",
+                                               "Oscillibacter",
+                                               "Parabacteroides",
+                                               "Roseburia",
+                                               "Ruminococcus",
+                                               "Other"))
+
+#plot
+pb <- ggplot(Fig2B, aes(x=rank, y=genome_size, colour=Genus)) + geom_point(size=3) + geom_smooth(method='lm', se=FALSE)
+pb <- pb + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                 panel.background = element_blank(), axis.line = element_line(colour = "black"))
+#pb <- pb + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
+pb <- pb + xlab("Cophylogeny index") + ylab("Genome size (Mbp)")
+pb <- pb + scale_colour_manual(values=c("darkorange", "darkred", #Bacteroidetes
+                                        "forestgreen", #Actino
+                                        "skyblue", "deepskyblue", "darkblue", "purple", #Firmicutes
+                                        "goldenrod3", #more Bacteroidetes
+                                        "plum", "dodgerblue", #more Firmicutes
+                                        "darkgrey"))
+pb <- pb + annotate("text", label="P = 0.035", x=4, y=7)
+pb <- pb + theme(text = element_text(family = "Helvetica"))
+pb <-  pb + ylim(1,8)
+pb
+
+#statistics supplemental: chances of observing trend 7 out of 8 times
+binom.test(7, 8, 0.5, alternative="greater")
+
+```
+
+### Fig 2C
+
+```{r Fig 2C, warnings=FALSE, width=3, height=3}
+#panel 1: Africa
+my_ylab1 <- expression(paste(bold("Africa"), " to other populations (%)"))
+
+pc <- ggplot(Fig2C, aes(x=sig_n, y=Africa_to_rest*100)) + geom_point(size=3, colour="#FF0000") + geom_smooth(method='lm', colour="#FF0000") 
+pc <- pc + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                 panel.background = element_blank(), axis.line = element_line(colour = "black"),
+                 axis.title.x = element_text(margin = margin(t = 10)))
+pc <- pc + xlab("Cophylogeny index") + ylab(my_ylab1)
+pc <- pc + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
+pc <- pc + annotate("text", label="P = 0.0026\nRho = 0.40", x=2, y=90)
+pc <- pc + theme(text = element_text(family = "Helvetica"))
+pc <- pc + ylim(0, 100)
+pc
+
+cor.test(Fig2C$sig_n, Fig2C$Africa_to_rest, method='spearman')
+
+#panel 2: Asia
+my_ylab2 <- expression(paste(bold("Asia"), " to other populations (%)"))
+
+pd <- ggplot(Fig2C, aes(x=sig_n, y=Asia_to_rest*100)) + geom_point(size=3, colour="#0000FF") + geom_smooth(method='lm', colour="#0000FF")
+pd <- pd + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                 panel.background = element_blank(), axis.line = element_line(colour = "black"),
+                 axis.title.x = element_text(margin = margin(t = 10)))
+pd <- pd + xlab("Cophylogeny index") + ylab(my_ylab2)
+pd <- pd + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
+pd <- pd + annotate("text", label="P = 0.22\nRho = -0.17", x=2, y=90)
+pd <- pd + theme(text = element_text(family = "Helvetica"))
+pd <- pd + ylim(0, 100)
+pd
+
+cor.test(Fig2C$sig_n, Fig2C$Asia_to_rest, method='spearman')
+
+#panel 3: Europe
+my_ylab3 <- expression(paste(bold("Europe"), " to other populations (%)"))
+
+pe <- ggplot(Fig2C, aes(x=sig_n, y=Europe_to_rest*100)) + geom_point(size=3, colour="#FF9933") + geom_smooth(method='lm', colour="#FF9933") 
+pe <- pe + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                 panel.background = element_blank(), axis.line = element_line(colour = "black"),
+                 axis.title.x = element_text(margin = margin(t = 10)))
+pe <- pe + xlab("Cophylogeny index") + ylab(my_ylab3)
+pe <- pe + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
+pe <- pe + annotate("text", label="P = 0.029\nRho = -0.29", x=2, y=90)
+pe <- pe + theme(text = element_text(family = "Helvetica"))
+pe <- pe + ylim(0, 100)
+pe
+
+cor.test(Fig2C$sig_n, Fig2C$Europe_to_rest, method='spearman')
+
+```
+
