@@ -1,0 +1,79 @@
+---
+title: "Codiversification tests"
+author: "Taichi Suzuki"
+date: "10/1/2021"
+output: html_document
+---
+
+##Introduction
+This document describes the codes that are used to calculate the number and directions of host-region-switch events by applying stochastic character mapping.
+
+##Setup
+```{r setup, include=FALSE}
+#Set root r
+knitr::opts_knit$set(root.dir = "/ebio/abt3_projects/Bifido_Coevolution/publication_codes/")
+```
+
+##Required packages
+```{r}
+library(phytools)
+```
+
+
+##Data example
+```{r}
+#Name of the bacteria to test
+Bac_name = "s__Collinsella_aerofaciens" 
+
+#Best maximum likelihood tree out of 100 trees (output of StrainPhlAn)
+Bac_tree_best = read.tree("/ebio/abt3_projects/Bifido_Coevolution/publication_codes/Example_data/s__Collinsella_aerofaciens_best.tree") 
+
+#Association file matching the tip and trait
+tip_trait = read.table("/ebio/abt3_projects/Bifido_Coevolution/data/StrainPhlAn_2021/llmgps/assoc_files/BacTip_Trait2.txt", header = TRUE)
+```
+
+
+##Function for stochastic character mapping
+```{r}
+#This function that takes 4 inputsand calculate the host-region-switch events based on Equal Rates model using a midpoint rooted tree.   
+#1. Bac_name: name of bacteria
+#2. Bac_tree: bacterial tree (best tree)
+#3. tip_trait: Association file matching the tip and trait
+#4. output_dir: output directory of the results
+
+Count.trait.evolution = function(Bac_name, Bac_tree, tip_trait, output_dir){
+  
+#tree file
+  Bac_tree_midpoint = midpoint.root(Bac_tree)
+
+#create trait file
+  Bac_tip = Bac_tree_midpoint$tip.label
+  Bac_tip_df = as.data.frame(Bac_tip)
+  tip_trait_filtered = merge(x=Bac_tip_df, y=tip_trait)
+  
+#create phytool input files
+  Bac_tip_sorted = tip_trait_filtered$Bac_tip
+  trait_filtered = tip_trait_filtered$trait
+  names(trait_filtered) = Bac_tip_sorted
+  trait_filtered2 = as.factor(trait_filtered)
+
+#Calculate simmap using ER model (it assumes Strain can switch from Africa to Europe and Europe to Africa in equal probability)
+  simmap_n100_midpoint_ER = make.simmap(Bac_tree_midpoint,trait_filtered2,model="ER",nsim=100)
+  summary_n100_midpoint_ER = describe.simmap(simmap_n100_midpoint_ER, plot = FALSE)
+
+#write output 
+sink(paste0(output_dir,Bac_name,"_simmap_ERmodel.txt"), append=TRUE)
+  print(Bac_name)
+  print(summary_n100_midpoint_ER)
+sink()
+}
+```
+
+#Example for stochastic character mapping
+```{r}
+#output directory
+Trait_evol_example_output = "/ebio/abt3_projects/Bifido_Coevolution/publication_codes/Example_data/"
+
+Count.trait.evolution(Bac_name, Bac_tree_best, tip_trait, Trait_evol_example_output)
+```
+
