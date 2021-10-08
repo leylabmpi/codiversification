@@ -123,21 +123,29 @@ comp50_MCs %>% subset(name1_CurrCountry == "Gabon" | name2_CurrCountry == "Gabon
 # In summary, 0.04% (3/7387) of all comparisons made b/w towns were SSEs; 7387 of all 8721 (85%) comparisons were made between towns
 
 
+#dat_Gabon <- data.frame(
+#    cat = as.factor(c("Related","Unrelated\n(same location)","Unrelated\n(different location)")),
+#    perc_ss = c((36/56)*100, (17/56)*100, (3/56)*100),
+#    perc_totalnation = c(0.74,14,85)
+#)
+
 dat_Gabon <- data.frame(
     cat = as.factor(c("Related","Unrelated\n(same location)","Unrelated\n(different location)")),
-    perc_ss = c((36/56)*100, (17/56)*100, (3/56)*100),
-    perc_totalnation = c(0.74,14,85)
+    relat = as.factor(c("related","unrelated","unrelated")),
+    perc_ss = c((36/65)*100, (17/1267)*100, (3/7387)*100)
 )
-dat_Gabon <- dat_Gabon %>%
-  gather("Stat", "Value", -cat)
+
+#dat_Gabon <- dat_Gabon %>%
+#  gather("Stat", "Value", -cat)
 
 level_order <- c("Related","Unrelated\n(same location)","Unrelated\n(different location)")
+x_axis_labels <- c("Same location\nn = 65", "Same location\nn = 1267", "Different location\nn = 7387")
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/StrainSharing_Gabon.pdf", width=5.3, height=3.639)
-Gabon_ss <- ggplot(dat_Gabon, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Bi_StrainSharing_Gabon.pdf", width=5.3, height=3.639)
+Gabon_ss <- ggplot(dat_Gabon, aes(x = factor(cat, level = level_order), y = perc_ss, fill = relat)) +
   geom_col(position = "dodge", width = 0.7) +
   ggtitle("Gabon")+
-  scale_fill_manual(labels = c("Strain sharing events", "All pairwise comparisons"), values=c("#FF0000", "black"))+
+  scale_fill_manual(labels = c("Related", "Unrelated"), values=c("#6EB3E4","#999999"))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         axis.title.x=element_blank(),
@@ -146,11 +154,10 @@ Gabon_ss <- ggplot(dat_Gabon, aes(x = factor(cat, level = level_order), y = Valu
         axis.text.x = element_text(angle = 40, hjust=1),
         axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
         legend.title = element_blank())+
-  scale_y_continuous("Percentage (%)", limits=c(0, 115), breaks = (seq(0, 100, by = 25)))+
-  annotate("text", label="***", x=1, y=86, size = 6, fontface = "bold")+ #P = 1.9e-70
-  annotate("segment", x=0.80, xend=1.20, y=78, yend=78)+
-  annotate("text", label="*", x=2, y=48, size = 6, fontface = "bold")+ #P = 1.0e-3
-  annotate("segment", x=1.80, xend=2.20, y=41, yend=41)
+  scale_y_continuous("Strains shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
+  annotate("text", label="***", x=1, y=60, size = 6, fontface = "bold")+
+  annotate("text", label="*", x=2, y=6, size = 6, fontface = "bold")+ 
+  scale_x_discrete(labels= x_axis_labels)
 Gabon_ss
 dev.off()
 ```
@@ -184,22 +191,29 @@ comp50_MCs %>% subset(name1_CurrCountry == "Vietnam" | name2_CurrCountry == "Vie
            count(SSE, sort = TRUE)
 # In summary, 0 of the comparisons made b/w towns were SSEs; 12111 of all 12686 (95.5%) comparisons were made between towns
 
+#dat_Vietnam <- data.frame(
+#    cat = as.factor(c("Related","Unrelated\n(same location)","Unrelated\n(different location)")),
+#    perc_ss = c(69, 31, 0),
+#    perc_totalnation = c(0.33,4.53,95.5)
+#)
+
 dat_Vietnam <- data.frame(
     cat = as.factor(c("Related","Unrelated\n(same location)","Unrelated\n(different location)")),
-    perc_ss = c(69, 31, 0),
-    perc_totalnation = c(0.33,4.53,95.5)
+    relat = as.factor(c("related","unrelated","unrelated")),
+    perc_ss = c((11/43)*100, (5/575)*100, (0/12111)*100)
 )
 
-dat_Vietnam <- dat_Vietnam %>%
-  gather("Stat", "Value", -cat)
+#dat_Vietnam <- dat_Vietnam %>%
+#  gather("Stat", "Value", -cat)
 
 level_order <- c("Related","Unrelated\n(same location)","Unrelated\n(different location)")
+x_axis_labels <- c("Same location\nn = 43", "Same location\nn = 575", "Different location\nn = 12111")
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/StrainSharing_Vietnam.pdf", width=5.3, height=3.639)
-Vietnam_ss <- ggplot(dat_Vietnam, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Bii_StrainSharing_Vietnam.pdf", width=5.3, height=3.639)
+Vietnam_ss <- ggplot(dat_Vietnam, aes(x = factor(cat, level = level_order), y = perc_ss, fill = relat)) +
   geom_col(position = "dodge", width = 0.7) +
   ggtitle("Vietnam")+
-  scale_fill_manual(labels = c("Strain sharing events", "All pairwise comparisons"), values=c("#FF0000", "black"))+
+  scale_fill_manual(labels = c("Related", "Unrelated"), values=c("#6EB3E4","#999999"))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         axis.title.x=element_blank(),
@@ -208,11 +222,10 @@ Vietnam_ss <- ggplot(dat_Vietnam, aes(x = factor(cat, level = level_order), y = 
         axis.text.x = element_text(angle = 40, hjust=1),
         axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
         legend.title = element_blank())+
-  scale_y_continuous("Percentage (%)", limits=c(0, 115), breaks = (seq(0, 100, by = 25)))+
-  annotate("text", label="**", x=1, y=86, size = 6, fontface = "bold")+ # P = 2.1e-27
-  annotate("segment", x=0.80, xend=1.20, y=78, yend=78)+
-  annotate("text", label="*", x=2, y=48, size = 6, fontface = "bold")+ # P = 9.3e-5
-  annotate("segment", x=1.80, xend=2.20, y=41, yend=41)
+  scale_y_continuous("Strains shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
+  annotate("text", label="***", x=1, y=31, size = 6, fontface = "bold")+
+  annotate("text", label="*", x=2, y=6, size = 6, fontface = "bold")+ 
+  scale_x_discrete(labels= x_axis_labels)
 Vietnam_ss
 dev.off()
 ```
@@ -235,25 +248,34 @@ comp50_MCs %>% subset(name1_CurrCountry == "Germany" | name2_CurrCountry == "Ger
                count(SSE, sort = TRUE)
 # In summary, 0% (0/8963) of all comparisons made w/n towns were SSEs; 8963 of all 9003 (99.56%) comparisons were made within towns
 
+#dat_Germany <- data.frame(
+#    cat = as.factor(c("Related","Unrelated\n(same location)")), # there were no between town comparisons; this is just a placeholder for purposes of aesthetically-matching figures with Gabon and Vietnam
+#    perc_ss = c((18/18)*100, (0/18)*100),
+#    perc_totalnation = c(0.44, 99.56)
+#)
+
 dat_Germany <- data.frame(
-    cat = as.factor(c("Related","Unrelated\n(same location)")), # there were no between town comparisons; this is just a placeholder for purposes of aesthetically-matching figures with Gabon and Vietnam
-    perc_ss = c((18/18)*100, (0/18)*100),
-    perc_totalnation = c(0.44, 99.56)
+    cat = as.factor(c("Related","Unrelated\n(same location)")),
+    relat = as.factor(c("related","unrelated")),
+    perc_ss = c((18/40)*100, (0/8963)*100)
 )
-dat_Germany <- dat_Germany %>%
-  gather("Stat", "Value", -cat)
+
+#dat_Germany <- dat_Germany %>%
+#  gather("Stat", "Value", -cat)
 
 level_order <- c("Related","Unrelated\n(same location)")# there were no between town comparisons; this is just a placeholder for purposes of aesthetically-matching figures with Gabon and Vietnam
 
-ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
-  geom_col(position = "dodge")
+#ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+#  geom_col(position = "dodge")
 
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/StrainSharing_Germany.pdf", width=5.3, height=3.52)
-Germany_ss <- ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = Value, fill = Stat)) +
+x_axis_labels <- c("    Same location\nn = 40", "    Same location\nn = 8963")
+
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Biii_StrainSharing_Germany.pdf", width=5.3, height=3.639)
+Germany_ss <- ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = perc_ss, fill = relat)) +
   geom_col(position = "dodge", width = 0.47) +
   ggtitle("Germany")+
-  scale_fill_manual(labels = c("Strain sharing events", "All pairwise comparisons"), values=c("#FF0000", "black"))+
+  scale_fill_manual(labels = c("Related", "Unrelated"), values=c("#6EB3E4","#999999"))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         axis.title.x=element_blank(),
@@ -262,9 +284,9 @@ Germany_ss <- ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = 
         axis.text.x = element_text(angle = 40, hjust=1),
         axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
         legend.title = element_blank())+
-  scale_y_continuous("Percentage (%)", limits=c(0, 115), breaks = (seq(0, 100, by = 25)))+
-  annotate("segment", x=0.80, xend=1.20, y=107, yend=107)+
-  annotate("text", x=1, y=113, label="***", size = 6, fontface = "bold") # P = 
+  scale_y_continuous("Strains shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
+  annotate("text", label="***", x=1, y=50, size = 6, fontface = "bold")+
+  scale_x_discrete(labels= x_axis_labels)
 Germany_ss
 dev.off()
 ```
@@ -297,6 +319,22 @@ p_values <- c(1.919168e-70,0.0006540986,1,7.865622e-28,4.636454e-05,0.8000839,0,
 
 p.adjust(p_values, method = "BH", n = length(p_values))
 ```
+
+Supplemental Figure S7
+```{r}
+comp50_popANI99999 %>% 
+    count(Phylum, sort = TRUE) %>% 
+    ggplot(aes(x=reorder(Phylum, -n), y = n))+
+    geom_bar(stat="identity", fill="steelblue")+
+    labs(title="Phyla of Shared Strains",x="Phylum", y = "Number of Strain Sharing Events")+
+    theme_light()+
+    theme(axis.text.x = element_text(angle = 30, hjust=0.90))+
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"))+
+    theme(plot.title = element_text(hjust = 0.5))
+ggsave('/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/FigS7_SharedStrain_Phyla.pdf')
+```
+
 
 # Summary
 
