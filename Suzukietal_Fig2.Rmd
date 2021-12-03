@@ -49,7 +49,7 @@ pa <- pa + scale_x_discrete(labels = labels_a)
 pa <- pa + scale_y_continuous(breaks = (seq(0, 6, by = 1)))
 pa <- pa + ylab("Cophylogeny index") + xlab(NULL)
 pa <- pa + theme(text = element_text(family = "Helvetica"))
-pa <- pa + annotate("text", label="P = 3.7e-6", x=1.5, y=7.5)
+pa <- pa + annotate("text", label="****", x=1.5, y=7.5, size=6, fontface="bold")
 pa <- pa + annotate("segment", x=1, xend=2, y=7, yend=7)
 pa
 
@@ -70,7 +70,8 @@ pb <- pb + theme(panel.grid.major = element_blank(), panel.grid.minor = element_
                  panel.background = element_blank(), axis.line = element_line(colour = "black"))
 pb <- pb + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
 pb <- pb + xlab("Cophylogeny index") + ylab("Genome size (Mbp)")
-pb <- pb + annotate("text", label="P = 2.8e-4\nRho = -0.47", x=4, y=7)
+pb <- pb + annotate("text", label="***", x=4, y=7, size=6, fontface="bold", hjust=0)
+pb <- pb + annotate("text", label="Rho = -0.47", x=4, y=6.5,  hjust=0)
 pb <- pb + theme(text = element_text(family = "Helvetica"))
 pb <-  pb + ylim(1,8)
 pb
@@ -118,7 +119,7 @@ binom.test(7, 8, 0.5, alternative="greater")
 
 ```
 
-### Fig 2C
+### Fig 2C-E
 
 ```{r Fig 2C, warnings=FALSE, width=3, height=3}
 #panel 1: Africa
@@ -130,7 +131,8 @@ pc <- pc + theme(panel.grid.major = element_blank(), panel.grid.minor = element_
                  axis.title.x = element_text(margin = margin(t = 10)))
 pc <- pc + xlab("Cophylogeny index") + ylab(my_ylab1)
 pc <- pc + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
-pc <- pc + annotate("text", label="P = 0.0026\nRho = 0.40", x=2, y=90)
+pc <- pc + annotate("text", label="**", x=0.5, y=90, size=6, fontface="bold", hjust=0)
+pc <- pc + annotate("text", label="Rho = 0.40", x=0.5, y=85,  hjust=0)
 pc <- pc + theme(text = element_text(family = "Helvetica"))
 pc <- pc + ylim(0, 100)
 pc
@@ -146,7 +148,7 @@ pd <- pd + theme(panel.grid.major = element_blank(), panel.grid.minor = element_
                  axis.title.x = element_text(margin = margin(t = 10)))
 pd <- pd + xlab("Cophylogeny index") + ylab(my_ylab2)
 pd <- pd + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
-pd <- pd + annotate("text", label="P = 0.22\nRho = -0.17", x=2, y=90)
+pd <- pd + annotate("text", label="N.S.\nRho = -0.17", x=0.5, y=90, hjust=0)
 pd <- pd + theme(text = element_text(family = "Helvetica"))
 pd <- pd + ylim(0, 100)
 pd
@@ -162,7 +164,8 @@ pe <- pe + theme(panel.grid.major = element_blank(), panel.grid.minor = element_
                  axis.title.x = element_text(margin = margin(t = 10)))
 pe <- pe + xlab("Cophylogeny index") + ylab(my_ylab3)
 pe <- pe + scale_x_continuous(breaks = (seq(0, 6, by = 1)))
-pe <- pe + annotate("text", label="P = 0.029\nRho = -0.29", x=2, y=90)
+pe <- pe + annotate("text", label="*", x=0.5, y=90, size=6, fontface="bold", hjust=0)
+pe <- pe + annotate("text", label="Rho = -0.29", x=0.5, y=85,  hjust=0)
 pe <- pe + theme(text = element_text(family = "Helvetica"))
 pe <- pe + ylim(0, 100)
 pe
