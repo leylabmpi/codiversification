@@ -167,7 +167,7 @@ comp50 <- subset(genomeWide_compare, percent_compared >= 0.50)
 
 Writing comp50 file for strain-sharing analysis
 ```{r}
-write_tsv(x=comp50, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv")
+#write_tsv(x=comp50, file="/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/files/comp50_wmetadata_wNCBI.tsv")
 ```
 
 Identifiying different locations for coordinate analysis
@@ -184,7 +184,39 @@ comp50 %>% filter(name1_SamplingLocation_2 == "Tranquille")
 The sample metadata, NCBI classifications and filtered inStrain results were combined in preparation for strain-sharing analysis.
 
 
-***
+```{r}
+metadata_i = '/ebio/abt3_projects/HUBIF_metagenomics/data/metadata/final_metadata/InfantMetadata_LFCurated_01.07.20.xlsx'
+metadata_i <- readxl::read_xlsx(metadata_i)
+
+metadata_i <- metadata_i %>% subset(ParticipantID %in% IDs_for_paper$InfantID) 
+```
+
+```{r}
+table(metadata_i$CurrCountry, metadata_i$Diet_1BMonly_2BMform_3SomeSolid_4NoBM)
+
+ggplot(metadata_i) +
+       aes(x= metadata_i$CurrCountry,fill = as.character(metadata_i$Diet_1BMonly_2BMform_3SomeSolid_4NoBM)) + 
+       geom_bar() + 
+       theme_classic()
+
+tbl = table(metadata_i$CurrCountry, metadata_i_chisq$Diet_1BMonly_2BMform_3SomeSolid_4NoBM)
+```
+```{r}
+metadata_i_chisq <- metadata_i %>% mutate(Diet_1BMonly_2BMform_3SomeSolid_4NoBM = as.character(Diet_1BMonly_2BMform_3SomeSolid_4NoBM))
+
+metadata_i_chisq <- metadata_i_chisq %>% filter(Diet_1BMonly_2BMform_3SomeSolid_4NoBM %in% c("1","2","3","4"))
+
+metadata_i_chisq <- metadata_i_chisq %>% mutate(excl_bf = case_when(Diet_1BMonly_2BMform_3SomeSolid_4NoBM == "1" ~ "Yes",
+                                                    Diet_1BMonly_2BMform_3SomeSolid_4NoBM == "2" ~ "No",
+                                                    Diet_1BMonly_2BMform_3SomeSolid_4NoBM == "3" ~ "No",
+                                                    Diet_1BMonly_2BMform_3SomeSolid_4NoBM == "4" ~ "No"))
+
+tbl = table(metadata_i_chisq$CurrCountry, metadata_i_chisq$excl_bf)
+tbl
+
+chisq.test(tbl)
+```
+
 
 # SessionInfo
 

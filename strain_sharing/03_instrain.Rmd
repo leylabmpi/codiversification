@@ -49,7 +49,6 @@ library(ggplot2)
 library(readr)
 library(stringr)
 library(LeyLabRMisc)
-library(ggpattern)
 ```
 
 # Analysis
@@ -139,22 +138,22 @@ dat_Gabon <- data.frame(
 #  gather("Stat", "Value", -cat)
 
 level_order <- c("Related","Unrelated\n(same location)","Unrelated\n(different location)")
-x_axis_labels <- c("Same location\nn = 65", "Same location\nn = 1267", "Different location\nn = 7387")
+x_axis_labels <- c("Same\nn = 65", "Same\nn = 1267", "Different\nn = 7387")
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Bi_StrainSharing_Gabon.pdf", width=5.3, height=3.639)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Bi_StrainSharing_Gabon2.pdf", width=5.3, height=3.639)
 Gabon_ss <- ggplot(dat_Gabon, aes(x = factor(cat, level = level_order), y = perc_ss, fill = relat)) +
   geom_col(position = "dodge", width = 0.7) +
   ggtitle("Gabon")+
   scale_fill_manual(labels = c("Related", "Unrelated"), values=c("#6EB3E4","#999999"))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5),
+        axis.title.x=element_blank(),
         text = element_text(family = "Helvetica", size = 12),
         axis.text.x = element_text(angle = 40, hjust=1),
         axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
         legend.title = element_blank())+
-  scale_y_continuous("Strains shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
+  scale_y_continuous("Percent shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
   annotate("text", label="***", x=1, y=60, size = 6, fontface = "bold")+
   annotate("text", label="*", x=2, y=6, size = 6, fontface = "bold")+ 
   scale_x_discrete(labels= x_axis_labels)
@@ -207,22 +206,41 @@ dat_Vietnam <- data.frame(
 #  gather("Stat", "Value", -cat)
 
 level_order <- c("Related","Unrelated\n(same location)","Unrelated\n(different location)")
-x_axis_labels <- c("Same location\nn = 43", "Same location\nn = 575", "Different location\nn = 12111")
+x_axis_labels <- c("Same\nn = 43", "Same\nn = 575", "Different\nn = 12111")
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Bii_StrainSharing_Vietnam.pdf", width=5.3, height=3.639)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Bii_StrainSharing_Vietnam2.pdf", width=5.3, height=3.639)
 Vietnam_ss <- ggplot(dat_Vietnam, aes(x = factor(cat, level = level_order), y = perc_ss, fill = relat)) +
   geom_col(position = "dodge", width = 0.7) +
   ggtitle("Vietnam")+
   scale_fill_manual(labels = c("Related", "Unrelated"), values=c("#6EB3E4","#999999"))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
-        axis.title.x=element_blank(),
         plot.title = element_text(hjust = 0.5),
+        axis.title.x=element_blank(),
         text = element_text(family = "Helvetica", size = 12),
         axis.text.x = element_text(angle = 40, hjust=1),
         axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
         legend.title = element_blank())+
-  scale_y_continuous("Strains shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
+  scale_y_continuous("Percent shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
+  annotate("text", label="***", x=1, y=31, size = 6, fontface = "bold")+
+  annotate("text", label="*", x=2, y=6, size = 6, fontface = "bold")+ 
+  scale_x_discrete(labels= x_axis_labels)
+Vietnam_ss
+dev.off()
+
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Bii_crop_for_xaxistitle_andfiglegend.pdf", width=5.3, height=3.639)
+Vietnam_ss <- ggplot(dat_Vietnam, aes(x = factor(cat, level = level_order), y = perc_ss, fill = relat)) +
+  geom_col(position = "dodge", width = 0.7) +
+  ggtitle("Vietnam")+
+  xlab("Strain comparisons by sampling location")+
+  scale_fill_manual(labels = c("Related mother-child pairs", "Unrelated mother-child paJuneirs"), values=c("#6EB3E4","#999999"))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        plot.title = element_text(hjust = 0.5),
+        text = element_text(family = "Helvetica", size = 12),
+        axis.text.x = element_text(angle = 40, hjust=1),
+        axis.text = element_text(family = "Helvetica", size = 12, colour = "black"))+
+  scale_y_continuous("Percent shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
   annotate("text", label="***", x=1, y=31, size = 6, fontface = "bold")+
   annotate("text", label="*", x=2, y=6, size = 6, fontface = "bold")+ 
   scale_x_discrete(labels= x_axis_labels)
@@ -269,9 +287,9 @@ level_order <- c("Related","Unrelated\n(same location)")# there were no between 
 #  geom_col(position = "dodge")
 
 
-x_axis_labels <- c("    Same location\nn = 40", "    Same location\nn = 8963")
+x_axis_labels <- c("    Same\nn = 40", "    Same\nn = 8963")
 
-pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Biii_StrainSharing_Germany.pdf", width=5.3, height=3.639)
+pdf("/ebio/abt3_projects/HUBIF_metagenomics/code/metagenomes/cophylogeny/instrain/final_for_paper/codiversification/strain_sharing/figures/Fig4Biii_StrainSharing_Germany2.pdf", width=5.3, height=3.639)
 Germany_ss <- ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = perc_ss, fill = relat)) +
   geom_col(position = "dodge", width = 0.47) +
   ggtitle("Germany")+
@@ -284,7 +302,7 @@ Germany_ss <- ggplot(dat_Germany, aes(x = factor(cat, level = level_order), y = 
         axis.text.x = element_text(angle = 40, hjust=1),
         axis.text = element_text(family = "Helvetica", size = 12, colour = "black"),
         legend.title = element_blank())+
-  scale_y_continuous("Strains shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
+  scale_y_continuous("Percent shared (%)", limits=c(0, 62), breaks = (seq(0, 50, by = 25)))+
   annotate("text", label="***", x=1, y=50, size = 6, fontface = "bold")+
   scale_x_discrete(labels= x_axis_labels)
 Germany_ss
