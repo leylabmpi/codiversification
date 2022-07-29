@@ -59,7 +59,7 @@ Host_tree_cons = as.polytomy(Host_tree_best, feature = 'node.label', fun=functio
 
 ##1. Phytools function
 ```{r}
-#This function takes 6 inputs and calculate the mean and standard deviation of test statistics and p-values based on 10 tests using N permutations
+#This function takes 6 inputs and calculate the mean and standard deviation of test statistics and p-values using N permutations
 #1. Bac_name: name of bacteria
 #2. Bac_tree: bacterial tree (best tree or consensus tree)
 #3. Host_tree: host tree (best tree or consensus tree)
@@ -67,7 +67,7 @@ Host_tree_cons = as.polytomy(Host_tree_best, feature = 'node.label', fun=functio
 #5. assoc_f: association file to match the host tips and bacterial tips
 #6. output_dir: output directory of the resulting file 
 
-phytools.MeanSD.function = function(Bac_name, Bac_tree, Host_tree, N_perm, assoc_f, output_dir){
+phytools.function = function(Bac_name, Bac_tree, Host_tree, N_perm, assoc_f, output_dir){
   
   #Get bac tips
   Bac_tip = Bac_tree$tip.label
@@ -77,8 +77,8 @@ phytools.MeanSD.function = function(Bac_name, Bac_tree, Host_tree, N_perm, assoc
   Host_Bac_filtered = merge(x=Bac_tip_df, y=assoc_f)
   Host_Bac_filtered_m = as.matrix(Host_Bac_filtered)
   
-  #Run cospeciation function with N_perm permutation 10 times 
-  result = replicate(10, cospeciation(Bac_tree, Host_tree, distance = c("RF"), method = c("permutation"), assoc=Host_Bac_filtered_m, nsim = N_perm), simplify = FALSE)
+  #Run cospeciation function with N_perm permutation 
+  result = cospeciation(Bac_tree, Host_tree, distance = c("RF"), method = c("permutation"), assoc=Host_Bac_filtered_m, nsim = N_perm)
 
   #Change matrix to list, extract row, and then to vector
   result2 = unlist(result, recursive = FALSE, use.names= TRUE)
@@ -87,20 +87,10 @@ phytools.MeanSD.function = function(Bac_name, Bac_tree, Host_tree, N_perm, assoc
   pvalues = as.numeric(result3$P.val)
   null = as.numeric(result3$d.null)
   
-  #Store mean and sd
-  mean_p = mean(pvalues)
-  SD_p = sd(pvalues)
-  mean_null = mean(null)
-  SD_null = sd(null)
-  
   #Write output
   sink(paste0(output_dir, Bac_name, "_n", N_perm, "_phytools_output.txt"), append=TRUE)
   print(Bac_name)
-  print(paste0("p-values (mean) = ",mean_p))
-  print(paste0("p-value (SD) = ",SD_p))
-  print(paste0("Null RF distance (mean) = ",mean_null))
-  print(paste0("Null RF distance (SD) = ",SD_null))
-  print(paste0("Obs RF distance = ",obs_RFdist))
+  print(result)
   sink()
 }
 ```
@@ -110,21 +100,21 @@ phytools.MeanSD.function = function(Bac_name, Bac_tree, Host_tree, N_perm, assoc
 #output directory
 phytools_example_output = "/ebio/abt3_projects/Bifido_Coevolution/publication_codes/Example_data/"
   
-phytools.MeanSD.function(Bac_name, Bac_tree_best, Host_tree_best, 999, assoc_f, phytools_example_output)
+phytools.function(Bac_name, Bac_tree_best, Host_tree_best, 999, assoc_f, phytools_example_output)
 ```
 
 
 
 ##2. Paco function
 ```{r}
-#This function takes 5 inputs and calculate the mean and standard deviation of Paco test statistics and p-values based on 10 tests using N permutations
+#This function takes 5 inputs and calculate the Paco test statistics and p-values using N permutations
 #1. Bac_name: name of bacteria
 #2. Bac_tree: bacterial tree (best tree or consensus tree)
 #3. Host_tree: host tree (best tree or consensus tree)
 #4. N_perm: the number of permutations for a given cospeciation function
 #5. output_dir: output directory of the resulting file 
 
-PACO.cutree.MeanSD.function = function(Bac_name, Bac_tree, Host_tree, N_perm, output_dir){
+PACO.cutree.function = function(Bac_name, Bac_tree, Host_tree, N_perm, output_dir){
 
 ##Required subfunctions:
 #PACo
@@ -151,9 +141,7 @@ RemoveDups <- function(df, column) {
 }
 
 
-##Main function
-PACO.cutree.function = function(Bac_name, Bac_tree, Host_tree, N_perm, output_dir){
-  
+##Main function  
 ##1. Create Bac tree using cutree
 #Get tip labels
 Bac_tip_label = Bac_tree$tip.label
@@ -231,15 +219,7 @@ for (n in c(1:N.perm))
 		{P.value = P.value + 1} 
 	}
 P.value <- P.value/N.perm
-}
 
-
-#Run the above function 10 times
-PACo_result = replicate(10, PACO.cutree.function(Bac_name, Bac_tree, Host_tree, N_perm, output_dir))
-  
-#Calculate p-value mean
-mean_p = mean(PACo_result)
-SD_p = sd(PACo_result)
 
 #Calculate m2_null mean and sd
 m2_null = read.table(file = paste0(output_dir,Bac_name,"_n",N_perm,"_m2_null.txt"), sep ="\t", header = FALSE)
@@ -250,36 +230,35 @@ m2_obs = read.table(file = paste0(output_dir,Bac_name,"_n",N_perm,"_m2_obs.txt")
 #print output
 sink(paste0(output_dir, Bac_name, "_n", N_perm, "_PACO_output.txt"), append=TRUE)
   print(Bac_name)
-  print(paste0("Mean p-values = ",mean_p))
-  print(paste0("SD p-values = ",SD_p))
+  print(paste0("p-value = ",P.value))
+  print(paste0("m2_obs = ",m2_obs))
   print(paste0("Mean m2_null = ",mean_null))
   print(paste0("SD m2_null = ",sd_null))
-  print(paste0("m2_obs = ",m2_obs))
 sink()
 }
 
 ```
 
-#2.1. Phytools Example
+#2.1. PACo Example
 ```{r}
 #output directory
 paco_example_output = "/ebio/abt3_projects/Bifido_Coevolution/publication_codes/Example_data/"
   
-PACO.cutree.MeanSD.function(Bac_name, Bac_tree_best, Host_tree_best, 999, paco_example_output)
+PACO.cutree.function(Bac_name, Bac_tree_best, Host_tree_best, 999, paco_example_output)
 ```
 
 
 
 ##3. Parafit function
 ```{r}
-#This function takes 5 inputs and calculate the mean and standard deviation of Parfit test statistics and p-values based on 10 tests using N permutations
+#This function takes 5 inputs and calculate the mean and standard deviation of Parfit test statistics and p-values using N permutations
 #1. Bac_name: name of bacteria
 #2. Bac_tree: bacterial tree (best tree or consensus tree)
 #3. Host_tree: host tree (best tree or consensus tree)
 #4. N_perm: the number of permutations for a given cospeciation function
 #5. output_dir: output directory of the resulting file 
 
-parafit.cutree.MeanSD.function = function(Bac_name, Bac_tree, Host_tree, N_perm, output_dir){
+parafit.cutree.function = function(Bac_name, Bac_tree, Host_tree, N_perm, output_dir){
   
 ##1. Create Bac tree using cutree
 #Get tip labels
@@ -498,33 +477,13 @@ out
 }
 ##########################
 
-
-#Run parafit with N_perm permutation 10 times
-parafit_result = replicate(10, parafit_Legendre(Host_tree_filter_m, Bac_dist_cutree, HP_file, nperm = N_perm, correction="cailliez"))
-
-#Store results from 10 replicates
-parafitglobal_obs = parafit_result[2] #no need for mean because all same values
-parafitglobal_obs_ul = unlist(parafitglobal_obs)
-parafitglobal_null = parafit_result[c(1,7,13,19,25,31,37,43,49,55)]
-parafitglobal_null_ul = unlist(parafitglobal_null)
-parafit_pvalue = parafit_result[c(3,9,15,21,27,33,39,45,51,57)]
-parafit_pvalue_ul = unlist(parafit_pvalue)
-
-#Calculate mean and sd
-mean_null = mean(parafitglobal_null_ul)
-SD_null = sd(parafitglobal_null_ul)
-mean_p = mean(parafit_pvalue_ul)
-SD_p = sd(parafit_pvalue_ul)
-
+#Run parafit with N_perm permutation
+parafit_result = parafit_Legendre(Host_tree_filter_m, Bac_dist_cutree, HP_file, nperm = N_perm, correction="cailliez")
 
 #Write output
   sink(paste0(output_dir, Bac_name, "_n", N_perm, "_parafit_output.txt"), append=TRUE)
   print(Bac_name)
-  print(paste0("ParaFitGlobal_obs =",parafitglobal_obs_ul))
-  print(paste0("ParaFitGlobal_null_mean =",mean_null))
-  print(paste0("ParaFitGlobal_null_SD =",SD_null))
-  print(paste0("p-values_mean =",mean_p))
-  print(paste0("p-values_SD = ",SD_p))
+  print(parafit_result)
   sink()
 }
 ```
@@ -535,5 +494,5 @@ SD_p = sd(parafit_pvalue_ul)
 #output directory
 parafit_example_output = "/ebio/abt3_projects/Bifido_Coevolution/publication_codes/Example_data/"
   
-parafit.cutree.MeanSD.function(Bac_name, Bac_tree_best, Host_tree_best, 999, parafit_example_output)
+parafit.cutree.function(Bac_name, Bac_tree_best, Host_tree_best, 999, parafit_example_output)
 ```
